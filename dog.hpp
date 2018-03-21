@@ -205,4 +205,58 @@ private:
     }
 };
 
+class DogFailure {
+private:
+    int x;
+    double y;
+    double speed;
+    SDL_Texture* texture;
+    SDL_Rect frames[2];
+    int currentFrame;
+    DogSuccessState state;
+    Timer timer = Timer(0);
+    Timer animTimer;
+    int yTopLimit;
+    int yBottomLimit;
+
+public:
+    DogFailure(int x, int yBottom, int yTop, SDL_Texture* texture_failure, double speed, int framePerSecond)
+        : animTimer(1000.0 / framePerSecond) {
+        this->x = x;
+        y = yBottom;
+        yBottomLimit = yBottom;
+        yTopLimit = yTop;
+        texture = texture_failure;
+        this->speed = speed;
+        state = UP;
+        spriteStripRects(texture_failure, 2, frames);
+        currentFrame = 0;
+    }
+
+    ///
+    /// \param drawer
+    /// \param deltaTime
+    /// \return true if animation is complete, false otherwise.
+    bool render(Drawer* drawer, double deltaTime) {
+        if (state == UP)
+            y += -speed * deltaTime * 0.5;
+        else if (state == DOWN)
+            y += speed * deltaTime;
+
+        if (animTimer.tick(deltaTime))
+            currentFrame = (currentFrame + 1) % 2;
+        drawer->renderTexture(texture, x, static_cast<int>(y), &frames[currentFrame]);
+
+        if (state == UP && y < yTopLimit) {
+            state = STOPPED;
+            timer.reset(200.0);
+        }
+        else if (state == STOPPED && timer.tick(deltaTime))
+            state = DOWN;
+        else if (state == DOWN && y > yBottomLimit)
+            return true;
+        return false;
+    }
+};
+
 #endif //DUCKHUNT_DOG_HPP

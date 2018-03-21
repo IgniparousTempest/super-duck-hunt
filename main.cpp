@@ -8,9 +8,6 @@
 //const int SCREEN_HEIGHT = 540;
 const int SCREEN_WIDTH  = 256 * 3;
 const int SCREEN_HEIGHT = 224 * 3;
-Uint64 NOW;
-Uint64 LAST;
-double deltaTime;
 
 int main(int argc, char* argv []) {
     // Start SDL
@@ -44,102 +41,30 @@ int main(int argc, char* argv []) {
         return 1;
     }
 
+    bool quit = false;
     Drawer drawer(background, renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    Player_Stats player_stats;
     MainMenu mainMenu(&drawer, &game_textures, &ui_textures);
-    mainMenu.start();
-    if (mainMenu.resultGameType() == SINGLE)
-        player_stats = singleDuckGame();
-    else if (mainMenu.resultGameType() == DOUBLE)
-        player_stats = doubleDuckGame();
-    else
-        int iii = 0; // TODO: Quit
-    std::vector<Duck> ducks = {};
-    DuckHatchery hatchery(&game_textures, &drawer);
+    quit = mainMenu.start();
 
+    Player_Stats player_stats;
+    if (!quit) {
+        if (mainMenu.resultGameType() == SINGLE)
+            player_stats = singleDuckGame();
+        else if (mainMenu.resultGameType() == DOUBLE)
+            player_stats = doubleDuckGame();
+        else
+            quit = true;
+    }
 
-    bool quit = false;
-    IntroCutScene introCutScene(&drawer, background, foreground, &player_stats, &game_textures, &ui_textures);
-    quit = introCutScene.start();
+    if (!quit) {
+        IntroCutScene introCutScene(&drawer, background, foreground, &player_stats, &game_textures, &ui_textures);
+        quit = introCutScene.start();
+    }
 
-    trySpawnDuck(&hatchery, &ducks, &player_stats);
-
-    NOW = SDL_GetPerformanceCounter();
-    SDL_Event e;
-    while (!quit) {
-        LAST = NOW;
-        NOW = SDL_GetPerformanceCounter();
-        deltaTime = ((NOW - LAST)*1000 / (double)SDL_GetPerformanceFrequency());
-
-        // Handle user input
-        while (SDL_PollEvent(&e) != 0){
-            if (e.type == SDL_QUIT) {
-                quit = true;
-            }
-            if (e.type == SDL_MOUSEBUTTONDOWN) {
-                if (player_stats.shots_left > 0) {
-                    player_stats.shots_left -= 1;
-
-                    // See if duck was hit
-                    int mX, mY;
-                    SDL_GetMouseState(&mX, &mY);
-                    for (auto &duck : ducks) {
-                        int wX = mX, wY = mY;
-                        drawer.screenPointToWorldPoint(&wX, &wY);
-                        if (duck.alive && wX > duck.x && wX < duck.x + duck.width() && wY > duck.y && wY < duck.y + duck.height()) {
-                            killDuck(&duck, &player_stats);
-                            if (player_stats.duck_next == 10)
-                                startNewRound(&player_stats);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Game Object updates
-        for (auto &duck : ducks)
-            duck.update(deltaTime);
-
-        auto i = std::begin(ducks);
-        while (i != ducks.end()) {
-            i->update(deltaTime);
-            if (i->y > hatchery.spawnY) {
-                // Show success cut scene
-                if (ducks.size() == 1) {
-                    SuccessCutScene successCutScene(&drawer, &player_stats, &game_textures, &ui_textures, background,
-                                                    foreground, &(*i));
-                    if (successCutScene.start())
-                        quit = true;
-                    NOW = SDL_GetPerformanceCounter(); // TODO: Not very accurate
-                }
-                i = ducks.erase(i);
-                // Launch new ducks
-                if (trySpawnDuck(&hatchery, &ducks, &player_stats))
-                    player_stats.shots_left = 3;
-            }
-            else
-                i++;
-        }
-
-        // Render
-        SDL_RenderClear(renderer); // Flush buffer
-
-        drawer.renderTexture(background, 0, 0);
-
-        for (auto &duck : ducks)
-            duck.render(&drawer, deltaTime);
-
-        drawer.renderTexture(foreground, 0, 0);
-
-        for (auto &duck : ducks)
-            if (duck.isFalling())
-                duck.renderScore(&drawer);
-
-        drawer.renderUI(deltaTime, &ui_textures, &player_stats);
-
-        SDL_RenderPresent(renderer); // Update screen
+    if (!quit) {
+        Level level(&drawer, background, foreground, &player_stats, &game_textures, &ui_textures);
+        level.start();
     }
 
     cleanup(background, foreground, &ui_textures, &game_textures, renderer, window);
