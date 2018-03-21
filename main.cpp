@@ -1,8 +1,8 @@
 #include <iostream>
-#include "environment.hpp"
+#include "cleanup.hpp"
 #include "dog.hpp"
 #include "level_logic.hpp"
-#include "cutscene.hpp"
+#include "environment.hpp"
 
 //const int SCREEN_WIDTH  = 960;
 //const int SCREEN_HEIGHT = 540;
