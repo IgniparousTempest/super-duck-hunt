@@ -12,6 +12,7 @@ void cleanup_textures(Textures* textures) {
     SDL_DestroyTexture(textures->ui_ducks_needed_bar);
     SDL_DestroyTexture(textures->ui_hit);
     SDL_DestroyTexture(textures->ui_message_fly_away);
+    SDL_DestroyTexture(textures->ui_message_game_over);
     SDL_DestroyTexture(textures->ui_numbers_green);
     SDL_DestroyTexture(textures->ui_numbers_white);
     SDL_DestroyTexture(textures->ui_score);

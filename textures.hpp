@@ -15,6 +15,7 @@ struct Textures {
     SDL_Texture* ui_ducks_needed_bar;
     SDL_Texture* ui_hit;
     SDL_Texture* ui_message_fly_away;
+    SDL_Texture* ui_message_game_over;
     SDL_Texture* ui_numbers_green;
     SDL_Texture* ui_numbers_white;
     SDL_Texture* ui_score;
@@ -108,6 +109,7 @@ Textures loadTexturesRemake(SDL_Renderer* renderer) {
         .ui_ducks_needed_bar = loadTexture("textures/ui_ducks_needed_bar.png", renderer),
         .ui_hit = loadTexture("textures/ui_hit.png", renderer),
         .ui_message_fly_away = loadTexture("textures/ui_message_fly_away.png", renderer),
+        .ui_message_game_over = loadTexture("textures/ui_message_game_over.png", renderer),
         .ui_numbers_green = loadTexture("textures/ui_numbers_green.png", renderer),
         .ui_numbers_white = loadTexture("textures/ui_numbers_white.png", renderer),
         .ui_score = loadTexture("textures/ui_score.png", renderer),
@@ -148,6 +150,7 @@ bool validateTextures(Textures* textures) {
         textures->ui_ducks_needed_bar != nullptr ||
         textures->ui_hit != nullptr ||
         textures->ui_message_fly_away != nullptr ||
+        textures->ui_message_game_over != nullptr ||
         textures->ui_numbers_green != nullptr ||
         textures->ui_numbers_white != nullptr ||
         textures->ui_score != nullptr ||

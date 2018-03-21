@@ -319,4 +319,33 @@ public:
     }
 };
 
+class GameOver : public Environment {
+private:
+    DogGameOver dogGameOver;
+
+public:
+    GameOver(Environment* env) : Environment(env), dogGameOver(213, 157, 120, textures->dog_failure, 0.1, 10) {
+    }
+
+    bool renderBackground(double deltaTime, bool* returnValue) override {
+        drawer->renderTexture(textures->background_fail, 0, 0);
+
+        if (dogGameOver.render(drawer, deltaTime)) {
+            *returnValue = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool renderForeground(double deltaTime, bool* returnValue) override {
+        if (Environment::renderForeground(deltaTime, returnValue))
+            return *returnValue;
+
+        drawer->renderTexture(textures->ui_message_game_over, 173, 44);
+
+        return false;
+    }
+};
+
 #endif //DUCKHUNT_CUTSCENE_HPP

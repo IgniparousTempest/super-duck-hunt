@@ -59,13 +59,24 @@ public:
             duck_hit = false;
     }
 
-    void trySpawnDuckOrStartNewRound() {
+    bool trySpawnDuckOrStartNewRound() {
         // Start new round
-        if (ducks.empty() && player_stats->duck_next == 10)
+        if (ducks.empty() && player_stats->duck_next == 10 && ducksHit() > player_stats->ducks_needed)
             startNewRound();
         // Launch new ducks
         if (trySpawnDuck())
             player_stats->shots_left = 3;
+
+        return !player_stats->ducks_current.empty();
+    }
+
+    int ducksHit() {
+        int count = 0;
+        for (bool i : player_stats->ducks_hit) {
+            if (i)
+                count++;
+        }
+        return count;
     }
 
     void killDuck (Duck* duck) {
@@ -154,7 +165,11 @@ public:
                 }
                 iter = ducks.erase(iter);
 
-                trySpawnDuckOrStartNewRound();
+                if (!trySpawnDuckOrStartNewRound()) {
+                    GameOver(this).start();
+                    *returnValue = false;
+                    return true;
+                }
             }
             else
                 iter++;
@@ -182,15 +197,29 @@ public:
                 // Handle no shots left
                 if (player_stats->shots_left == 0 && livingDucks() > 0) {
                     player_stats->ducks_current = {};
-                    if (ducks.size() == 1)
-                        FlyAwayDuck(this, &ducks.at(0)).start();
+                    if (ducks.size() == 1) {
+                        if (FlyAwayDuck(this, &ducks.at(0)).start()) {
+                            *returnValue = true;
+                            return true;
+                        }
+                    }
                     else if (ducks.size() == 2)
-                        FlyAwayDuck(this, &ducks.at(0), &ducks.at(1)).start();
+                        if (FlyAwayDuck(this, &ducks.at(0), &ducks.at(1)).start()) {
+                            *returnValue = true;
+                            return true;
+                        }
                     ducks = {};
-                    FailureCutScene(this).start();
+                    if (FailureCutScene(this).start()) {
+                        *returnValue = true;
+                        return true;
+                    }
                     now = SDL_GetPerformanceCounter(); // TODO: Not very accurate
 
-                    trySpawnDuckOrStartNewRound();
+                    if (!trySpawnDuckOrStartNewRound()) {
+                        GameOver(this).start();
+                        *returnValue = false;
+                        return true;
+                    }
                 }
             }
         }

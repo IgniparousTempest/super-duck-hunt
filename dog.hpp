@@ -252,4 +252,42 @@ public:
     }
 };
 
+class DogGameOver {
+private:
+    int x;
+    double y;
+    double speed;
+    DogSuccessState state;
+    Timer timer = Timer(0);
+    Animation animation;
+    int yTopLimit;
+
+public:
+    DogGameOver(int x, int yBottom, int yTop, SDL_Texture* texture_failure, double speed, int framePerSecond)
+        : animation(texture_failure, 2, framePerSecond) {
+        this->x = x;
+        y = yBottom;
+        yTopLimit = yTop;
+        this->speed = speed;
+        state = UP;
+    }
+
+    bool render(Drawer* drawer, double deltaTime) {
+        if (state == UP)
+            y += -speed * deltaTime * 0.5;
+        else if (state == DOWN)
+            y += speed * deltaTime;
+
+        drawer->renderTexture(animation.texture, x, static_cast<int>(y), animation.advance(deltaTime));
+
+        if (state == UP && y < yTopLimit) {
+            state = STOPPED;
+            timer.reset(4000.0);
+        }
+        else if (state == STOPPED && timer.tick(deltaTime))
+            return true;
+        return false;
+    }
+};
+
 #endif //DUCKHUNT_DOG_HPP

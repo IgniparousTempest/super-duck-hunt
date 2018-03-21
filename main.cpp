@@ -38,26 +38,28 @@ int main(int argc, char* argv []) {
     }
 
     bool quit = false;
-    Drawer drawer(textures.background, renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+    while (!quit) {
+        Drawer drawer(textures.background, renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    MainMenu mainMenu(&drawer, &textures);
-    quit = mainMenu.start();
+        MainMenu mainMenu(&drawer, &textures);
+        quit = mainMenu.start();
 
-    Player_Stats player_stats;
-    if (!quit) {
-        if (mainMenu.resultGameType() == SINGLE)
-            player_stats = Level::singleDuckGame();
-        else if (mainMenu.resultGameType() == DOUBLE)
-            player_stats = Level::doubleDuckGame();
-        else
-            quit = true;
+        Player_Stats player_stats;
+        if (!quit) {
+            if (mainMenu.resultGameType() == SINGLE)
+                player_stats = Level::singleDuckGame();
+            else if (mainMenu.resultGameType() == DOUBLE)
+                player_stats = Level::doubleDuckGame();
+            else
+                quit = true;
+        }
+
+        if (!quit)
+            quit = IntroCutScene(&drawer, &player_stats, &textures).start();
+
+        if (!quit)
+            SinglePlayerGame(&drawer, &player_stats, &textures).start();
     }
-
-    if (!quit)
-        quit = IntroCutScene(&drawer, &player_stats, &textures).start();
-
-    if (!quit)
-        SinglePlayerGame(&drawer, &player_stats, &textures).start();
 
     cleanup(&textures, renderer, window);
     SDL_Quit();
