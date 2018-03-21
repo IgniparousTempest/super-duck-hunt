@@ -19,6 +19,7 @@ void cleanup_ui(UI_Textures* ui_textures) {
 }
 
 void cleanup_game(Game_Textures* game_textures) {
+    SDL_DestroyTexture(game_textures->dog_failure);
     SDL_DestroyTexture(game_textures->dog_jumping);
     SDL_DestroyTexture(game_textures->dog_sniffing);
     SDL_DestroyTexture(game_textures->dog_success);

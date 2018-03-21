@@ -20,6 +20,7 @@ struct UI_Textures {
 };
 
 struct Game_Textures {
+    SDL_Texture* dog_failure;
     SDL_Texture* dog_jumping;
     SDL_Texture* dog_sniffing;
     SDL_Texture* dog_success;
@@ -104,6 +105,7 @@ UI_Textures loadUiTexturesRemake(SDL_Renderer *renderer) {
 
 Game_Textures loadGameTexturesRemake(SDL_Renderer *renderer) {
     return {
+            .dog_failure = loadTexture("textures/dog_failure.png", renderer),
             .dog_jumping = loadTexture("textures/dog_jumping.png", renderer),
             .dog_sniffing = loadTexture("textures/dog_sniffing.png", renderer),
             .dog_success = loadTexture("textures/dog_success.png", renderer),
@@ -132,6 +134,7 @@ bool validateUiTextures(UI_Textures *ui_textures) {
 
 bool validateGameTextures(Game_Textures *game_textures) {
     return (
+            game_textures->dog_failure != nullptr ||
             game_textures->dog_jumping != nullptr ||
             game_textures->dog_sniffing != nullptr ||
             game_textures->dog_success != nullptr ||

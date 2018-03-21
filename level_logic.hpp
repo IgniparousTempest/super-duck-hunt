@@ -31,7 +31,23 @@ int ducksNeededForRound(int round) {
 }
 
 Player_Stats singleDuckGame() {
-    return {.ducks_hit = {}, .ducks_current={}, .ducks_needed = 3, .duck_next = 0, .ducks_simultaneous = 1, .round = 1, .score = 0, .shots_left = 3};
+    return {
+        .ducks_hit = {},
+        .ducks_current={},
+        .ducks_needed = ducksNeededForRound(1),
+        .duck_next = 0, .ducks_simultaneous = 1,
+        .round = 1,
+        .score = 0,
+        .shots_left = 3
+    };
+}
+
+int livingDucks(std::vector<Duck>* ducks) {
+    int count = 0;
+    for (auto &duck : *ducks)
+        if (duck.alive)
+            count++;
+    return count;
 }
 
 Player_Stats doubleDuckGame() {
