@@ -30,20 +30,17 @@ int main(int argc, char* argv []) {
         return 1;
     }
 
-    SDL_Texture *background = loadTexture("textures/background.png", renderer);
-    SDL_Texture *foreground = loadTexture("textures/foreground.png", renderer);
-    UI_Textures ui_textures = loadUiTexturesRemake(renderer);
-    Game_Textures game_textures = loadGameTexturesRemake(renderer);
-    if (background == nullptr || foreground == nullptr || !validateGameTextures(&game_textures) || !validateUiTextures(&ui_textures)){
-        cleanup(background, foreground, &ui_textures, &game_textures, renderer, window);
+    Textures textures = loadTexturesRemake(renderer);
+    if (!validateTextures(&textures)) {
+        cleanup(&textures, renderer, window);
         SDL_Quit();
         return 1;
     }
 
     bool quit = false;
-    Drawer drawer(background, renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+    Drawer drawer(textures.background, renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    MainMenu mainMenu(&drawer, &game_textures, &ui_textures);
+    MainMenu mainMenu(&drawer, &textures);
     quit = mainMenu.start();
 
     Player_Stats player_stats;
@@ -57,11 +54,11 @@ int main(int argc, char* argv []) {
     }
 
     if (!quit)
-        quit = IntroCutScene(&drawer, background, foreground, &player_stats, &game_textures, &ui_textures).start();
+        quit = IntroCutScene(&drawer, &player_stats, &textures).start();
 
     if (!quit)
-        SinglePlayerGame(&drawer, background, foreground, &player_stats, &game_textures, &ui_textures).start();
+        SinglePlayerGame(&drawer, &player_stats, &textures).start();
 
-    cleanup(background, foreground, &ui_textures, &game_textures, renderer, window);
+    cleanup(&textures, renderer, window);
     SDL_Quit();
 }

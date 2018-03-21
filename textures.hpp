@@ -8,45 +8,41 @@
 #include <algorithm>
 #include "errors.hpp"
 
-struct UI_Textures {
-    SDL_Texture* bullet;
-    SDL_Texture* duck_lit;
-    SDL_Texture* duck_white;
-    SDL_Texture* ducks_needed_bar;
-    SDL_Texture* hit;
-    SDL_Texture* message_fly_away;
-    SDL_Texture* numbers_green;
-    SDL_Texture* numbers_white;
-    SDL_Texture* score;
-    SDL_Texture* shot;
-    SDL_Texture* round;
-};
-
-struct Game_Textures {
+struct Textures {
+    SDL_Texture* ui_bullet;
+    SDL_Texture* ui_duck_lit;
+    SDL_Texture* ui_duck_white;
+    SDL_Texture* ui_ducks_needed_bar;
+    SDL_Texture* ui_hit;
+    SDL_Texture* ui_message_fly_away;
+    SDL_Texture* ui_numbers_green;
+    SDL_Texture* ui_numbers_white;
+    SDL_Texture* ui_score;
+    SDL_Texture* ui_shot;
+    SDL_Texture* ui_round;
+    SDL_Texture* background;
     SDL_Texture* background_fail;
     SDL_Texture* dog_failure;
     SDL_Texture* dog_jumping;
     SDL_Texture* dog_sniffing;
     SDL_Texture* dog_success;
-    SDL_Texture* duck_blue;
     SDL_Texture* duck_blue_dead;
     SDL_Texture* duck_blue_diagonal;
     SDL_Texture* duck_blue_falling;
     SDL_Texture* duck_blue_horizontal;
     SDL_Texture* duck_blue_vertical;
-    SDL_Texture* duck_brown;
     SDL_Texture* duck_brown_dead;
     SDL_Texture* duck_brown_diagonal;
     SDL_Texture* duck_brown_falling;
     SDL_Texture* duck_brown_horizontal;
     SDL_Texture* duck_brown_vertical;
-    SDL_Texture* duck_red;
     SDL_Texture* duck_red_dead;
     SDL_Texture* duck_red_diagonal;
     SDL_Texture* duck_red_falling;
     SDL_Texture* duck_red_horizontal;
     SDL_Texture* duck_red_vertical;
     SDL_Texture* duck_score;
+    SDL_Texture* foreground;
     SDL_Texture* main_menu_background;
 };
 
@@ -104,81 +100,84 @@ std::array<SDL_Rect, size> spriteStripRects(SDL_Texture* texture) {
     return frames;
 }
 
-UI_Textures loadUiTexturesRemake(SDL_Renderer *renderer) {
+Textures loadTexturesRemake(SDL_Renderer* renderer) {
     return {
-            .bullet = loadTexture("textures/ui_bullet.png", renderer),
-            .duck_lit = loadTexture("textures/ui_duck_lit.png", renderer),
-            .duck_white = loadTexture("textures/ui_duck_white.png", renderer),
-            .ducks_needed_bar = loadTexture("textures/ui_ducks_needed_bar.png", renderer),
-            .hit = loadTexture("textures/ui_hit.png", renderer),
-            .message_fly_away = loadTexture("textures/ui_message_fly_away.png", renderer),
-            .numbers_green = loadTexture("textures/ui_numbers_green.png", renderer),
-            .numbers_white = loadTexture("textures/ui_numbers_white.png", renderer),
-            .score = loadTexture("textures/ui_score.png", renderer),
-            .shot = loadTexture("textures/ui_shot.png", renderer),
-            .round = loadTexture("textures/ui_round.png", renderer)
+        .ui_bullet = loadTexture("textures/ui_bullet.png", renderer),
+        .ui_duck_lit = loadTexture("textures/ui_duck_lit.png", renderer),
+        .ui_duck_white = loadTexture("textures/ui_duck_white.png", renderer),
+        .ui_ducks_needed_bar = loadTexture("textures/ui_ducks_needed_bar.png", renderer),
+        .ui_hit = loadTexture("textures/ui_hit.png", renderer),
+        .ui_message_fly_away = loadTexture("textures/ui_message_fly_away.png", renderer),
+        .ui_numbers_green = loadTexture("textures/ui_numbers_green.png", renderer),
+        .ui_numbers_white = loadTexture("textures/ui_numbers_white.png", renderer),
+        .ui_score = loadTexture("textures/ui_score.png", renderer),
+        .ui_shot = loadTexture("textures/ui_shot.png", renderer),
+        .ui_round = loadTexture("textures/ui_round.png", renderer),
+        .background = loadTexture("textures/background.png", renderer),
+        .background_fail = loadTexture("textures/background_fail.png", renderer),
+        .dog_failure = loadTexture("textures/dog_failure.png", renderer),
+        .dog_jumping = loadTexture("textures/dog_jumping.png", renderer),
+        .dog_sniffing = loadTexture("textures/dog_sniffing.png", renderer),
+        .dog_success = loadTexture("textures/dog_success.png", renderer),
+        .duck_blue_dead = loadTexture("textures/duck_blue_dead.png", renderer),
+        .duck_blue_diagonal = loadTexture("textures/duck_blue_diagonal.png", renderer),
+        .duck_blue_falling = loadTexture("textures/duck_blue_falling.png", renderer),
+        .duck_blue_horizontal = loadTexture("textures/duck_blue_horizontal.png", renderer),
+        .duck_blue_vertical = loadTexture("textures/duck_blue_vertical.png", renderer),
+        .duck_brown_dead = loadTexture("textures/duck_brown_dead.png", renderer),
+        .duck_brown_diagonal = loadTexture("textures/duck_brown_diagonal.png", renderer),
+        .duck_brown_falling = loadTexture("textures/duck_brown_falling.png", renderer),
+        .duck_brown_horizontal = loadTexture("textures/duck_brown_horizontal.png", renderer),
+        .duck_brown_vertical = loadTexture("textures/duck_brown_vertical.png", renderer),
+        .duck_red_dead = loadTexture("textures/duck_red_dead.png", renderer),
+        .duck_red_diagonal = loadTexture("textures/duck_red_diagonal.png", renderer),
+        .duck_red_falling = loadTexture("textures/duck_red_falling.png", renderer),
+        .duck_red_horizontal = loadTexture("textures/duck_red_horizontal.png", renderer),
+        .duck_red_vertical = loadTexture("textures/duck_red_vertical.png", renderer),
+        .duck_score = loadTexture("textures/duck_score.png", renderer),
+        .foreground = loadTexture("textures/foreground.png", renderer),
+        .main_menu_background = loadTexture("textures/main_menu_background.png", renderer)
     };
 }
 
-Game_Textures loadGameTexturesRemake(SDL_Renderer *renderer) {
-    return {
-            .background_fail = loadTexture("textures/background_fail.png", renderer),
-            .dog_failure = loadTexture("textures/dog_failure.png", renderer),
-            .dog_jumping = loadTexture("textures/dog_jumping.png", renderer),
-            .dog_sniffing = loadTexture("textures/dog_sniffing.png", renderer),
-            .dog_success = loadTexture("textures/dog_success.png", renderer),
-            .duck_blue = loadTexture("textures/duck_blue.png", renderer),
-            .duck_blue_dead = loadTexture("textures/duck_blue_dead.png", renderer),
-            .duck_blue_diagonal = loadTexture("textures/duck_blue_diagonal.png", renderer),
-            .duck_blue_falling = loadTexture("textures/duck_blue_falling.png", renderer),
-            .duck_blue_horizontal = loadTexture("textures/duck_blue_horizontal.png", renderer),
-            .duck_blue_vertical = loadTexture("textures/duck_blue_vertical.png", renderer),
-            .duck_brown = loadTexture("textures/duck_brown.png", renderer),
-            .duck_brown_dead = loadTexture("textures/duck_brown_dead.png", renderer),
-            .duck_brown_diagonal = loadTexture("textures/duck_brown_diagonal.png", renderer),
-            .duck_brown_falling = loadTexture("textures/duck_brown_falling.png", renderer),
-            .duck_brown_horizontal = loadTexture("textures/duck_brown_horizontal.png", renderer),
-            .duck_brown_vertical = loadTexture("textures/duck_brown_vertical.png", renderer),
-            .duck_red = loadTexture("textures/duck_red.png", renderer),
-            .duck_red_dead = loadTexture("textures/duck_red_dead.png", renderer),
-            .duck_red_diagonal = loadTexture("textures/duck_red_diagonal.png", renderer),
-            .duck_red_falling = loadTexture("textures/duck_red_falling.png", renderer),
-            .duck_red_horizontal = loadTexture("textures/duck_red_horizontal.png", renderer),
-            .duck_red_vertical = loadTexture("textures/duck_red_vertical.png", renderer),
-            .duck_score = loadTexture("textures/duck_score.png", renderer),
-            .main_menu_background = loadTexture("textures/main_menu_background.png", renderer)
-    };
-}
-
-bool validateUiTextures(UI_Textures *ui_textures) {
+bool validateTextures(Textures* textures) {
     return (
-            ui_textures->bullet != nullptr ||
-            ui_textures->duck_lit != nullptr ||
-            ui_textures->duck_white != nullptr ||
-            ui_textures->ducks_needed_bar != nullptr ||
-            ui_textures->hit != nullptr ||
-            ui_textures->message_fly_away != nullptr ||
-            ui_textures->numbers_green != nullptr ||
-            ui_textures->numbers_white != nullptr ||
-            ui_textures->score != nullptr ||
-            ui_textures->shot != nullptr ||
-            ui_textures->round != nullptr
+        textures->ui_bullet != nullptr ||
+        textures->ui_duck_lit != nullptr ||
+        textures->ui_duck_white != nullptr ||
+        textures->ui_ducks_needed_bar != nullptr ||
+        textures->ui_hit != nullptr ||
+        textures->ui_message_fly_away != nullptr ||
+        textures->ui_numbers_green != nullptr ||
+        textures->ui_numbers_white != nullptr ||
+        textures->ui_score != nullptr ||
+        textures->ui_shot != nullptr ||
+        textures->ui_round != nullptr ||
+        textures->background != nullptr ||
+        textures->background_fail != nullptr ||
+        textures->dog_failure != nullptr ||
+        textures->dog_jumping != nullptr ||
+        textures->dog_sniffing != nullptr ||
+        textures->dog_success != nullptr ||
+        textures->duck_blue_dead != nullptr ||
+        textures->duck_blue_diagonal != nullptr ||
+        textures->duck_blue_falling != nullptr ||
+        textures->duck_blue_horizontal != nullptr ||
+        textures->duck_blue_vertical != nullptr ||
+        textures->duck_brown_dead != nullptr ||
+        textures->duck_brown_diagonal != nullptr ||
+        textures->duck_brown_falling != nullptr ||
+        textures->duck_brown_horizontal != nullptr ||
+        textures->duck_brown_vertical != nullptr ||
+        textures->duck_red_dead != nullptr ||
+        textures->duck_red_diagonal != nullptr ||
+        textures->duck_red_falling != nullptr ||
+        textures->duck_red_horizontal != nullptr ||
+        textures->duck_red_vertical != nullptr ||
+        textures->duck_score != nullptr ||
+        textures->foreground != nullptr ||
+        textures->main_menu_background != nullptr
     );
-}
-
-bool validateGameTextures(Game_Textures *game_textures) {
-    return (
-            game_textures->background_fail != nullptr ||
-            game_textures->dog_failure != nullptr ||
-            game_textures->dog_jumping != nullptr ||
-            game_textures->dog_sniffing != nullptr ||
-            game_textures->dog_success != nullptr ||
-            game_textures->duck_blue != nullptr ||
-            game_textures->duck_brown != nullptr ||
-            game_textures->duck_red != nullptr ||
-            game_textures->duck_score != nullptr ||
-            game_textures->main_menu_background != nullptr
-    );
-}
+};
 
 #endif //DUCKHUNT_TEXTURES_HPP

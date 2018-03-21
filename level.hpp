@@ -10,9 +10,8 @@ protected:
     DuckColours previousDuckColour;
 
 public:
-    Level(Drawer *drawer, SDL_Texture *background, SDL_Texture *foreground, Player_Stats *player_stats,
-          Game_Textures *game_textures, UI_Textures *ui_textures)
-        : Environment(drawer, background, foreground, player_stats, game_textures, ui_textures), hatchery(game_textures, drawer) {
+    Level(Drawer *drawer, Player_Stats *player_stats, Textures *textures)
+        : Environment(drawer, player_stats, textures), hatchery(textures, drawer) {
         ducks = {};
         trySpawnDuck();
     }
@@ -124,9 +123,8 @@ public:
 
 class SinglePlayerGame : public Level {
 public:
-    SinglePlayerGame(Drawer *drawer, SDL_Texture *background, SDL_Texture *foreground, Player_Stats *player_stats,
-        Game_Textures *game_textures, UI_Textures *ui_textures)
-    : Level(drawer, background, foreground, player_stats, game_textures, ui_textures) {
+    SinglePlayerGame(Drawer *drawer, Player_Stats *player_stats, Textures *textures)
+    : Level(drawer, player_stats, textures) {
     }
 
     bool update(double deltaTime, bool* returnValue) override {

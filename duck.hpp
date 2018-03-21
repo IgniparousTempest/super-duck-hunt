@@ -221,7 +221,7 @@ private:
     double scaledRightBoundary;
 
 public:
-    DuckHatchery(Game_Textures* textures, Drawer* drawer)
+    DuckHatchery(Textures* textures, Drawer* drawer)
         : blueDead(textures->duck_blue_dead, 1), blueFalling(textures->duck_blue_falling, 4),
           blueFlyingDiagonal(textures->duck_blue_diagonal, 3), blueFlyingHorizontal(textures->duck_blue_horizontal, 3),
           blueFlyingVertical(textures->duck_blue_vertical, 3),

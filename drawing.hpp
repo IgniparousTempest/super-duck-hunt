@@ -103,18 +103,18 @@ public:
         renderTexture(tex, x, y, w, h, clip, angle, center, flip);
     }
 
-    void renderUI(double deltaTime, UI_Textures* ui_textures, Player_Stats *player_stats) {
+    void renderUI(double deltaTime, Textures* textures, Player_Stats *player_stats) {
         // Draw the shots left
-        renderTexture(ui_textures->shot, 110, 217);
+        renderTexture(textures->ui_shot, 110, 217);
         if (player_stats->shots_left >= 3)
-            renderTexture(ui_textures->bullet, 127, 208);
+            renderTexture(textures->ui_bullet, 127, 208);
         if (player_stats->shots_left >= 2)
-            renderTexture(ui_textures->bullet, 119, 208);
+            renderTexture(textures->ui_bullet, 119, 208);
         if (player_stats->shots_left >= 1)
-            renderTexture(ui_textures->bullet, 111, 208);
+            renderTexture(textures->ui_bullet, 111, 208);
 
         // Draw the shots left
-        renderTexture(ui_textures->hit, 149, 209);
+        renderTexture(textures->ui_hit, 149, 209);
 
         // Draw duck icons
         bool flickerTicked = flickerTimer.tick(deltaTime);
@@ -122,31 +122,31 @@ public:
         for (int i = 0; i < 10; ++i) {
             isCurrentDuck = std::find(player_stats->ducks_current.begin(), player_stats->ducks_current.end(), i) != player_stats->ducks_current.end();
             if (player_stats->ducks_hit[i])
-                renderLitDuck(ui_textures->duck_lit, i, 181 + i * 8, 210);
+                renderLitDuck(textures->ui_duck_lit, i, 181 + i * 8, 210);
             else if (!isCurrentDuck || isFlickering)
-                renderTexture(ui_textures->duck_white, 181 + i * 8, 210);
+                renderTexture(textures->ui_duck_white, 181 + i * 8, 210);
         }
         if (flickerTicked)
             isFlickering = !isFlickering;
 
         // Draw ducks needed bar
         for (int i = 0; i < player_stats->ducks_needed; ++i)
-            renderTexture(ui_textures->ducks_needed_bar, 181 + i * 8, 219);
+            renderTexture(textures->ui_ducks_needed_bar, 181 + i * 8, 219);
 
         // Draw round counter
         std::string round_string = std::to_string(player_stats->round);
-        renderTexture(ui_textures->round, 109, 192);
+        renderTexture(textures->ui_round, 109, 192);
         for (int i = 0; i < round_string.size(); ++i)
-            renderCharacter(ui_textures->numbers_green, round_string[i], 124 + i * 8, 192);
+            renderCharacter(textures->ui_numbers_green, round_string[i], 124 + i * 8, 192);
 
         // Draw score
         std::string score_string = std::to_string(player_stats->score);
         if (score_string.size() <= 6)
             score_string.insert(0, 6 - score_string.size(), '0');
         std::reverse(score_string.begin(), score_string.end());
-        renderTexture(ui_textures->score, 285, 216);
+        renderTexture(textures->ui_score, 285, 216);
         for (int i = 0; i < score_string.size(); ++i)
-            renderCharacter(ui_textures->numbers_white, score_string[i], 317 - i * 8, 208);
+            renderCharacter(textures->ui_numbers_white, score_string[i], 317 - i * 8, 208);
 
     }
 

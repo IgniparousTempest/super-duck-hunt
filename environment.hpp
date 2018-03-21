@@ -11,32 +11,25 @@ protected:
     Uint64 now;
     Uint64 last;
     Drawer* drawer;
-    SDL_Texture* background;
-    SDL_Texture* foreground;
     Player_Stats* player_stats;
-    Game_Textures* game_textures;
-    UI_Textures* ui_textures;
+    Textures* textures;
 
 public:
-    Environment(Drawer* drawer, SDL_Texture* background, SDL_Texture* foreground, Player_Stats* player_stats, Game_Textures* game_textures, UI_Textures* ui_textures) {
+    Environment(Drawer* drawer, Player_Stats* player_stats, Textures* textures) {
         this->drawer = drawer;
-        this->background = background;
-        this->foreground = foreground;
         this->player_stats = player_stats;
-        this->game_textures = game_textures;
-        this->ui_textures = ui_textures;
+        this->textures = textures;
     }
 
     Environment(Environment* other) :
-        Environment(other->getDrawer(), other->getBackground(), other->getForeground(), other->getPlayerStats(),
-                    other->getGameTextures(), other->getUiTextures()) {}
+        Environment(other->getDrawer(), other->getPlayerStats(), other->getTextures()) {}
 
     /// Renders the background for this environment.
     /// \param deltaTime The time since the last frame in ms.
     /// \param returnValue The value to return.
     /// \return true if something should be returned, false otherwise.
     virtual bool renderBackground(double deltaTime, bool* returnValue) {
-        drawer->renderTexture(background, 0, 0);
+        drawer->renderTexture(textures->background, 0, 0);
         return false;
     }
 
@@ -45,12 +38,12 @@ public:
     }
 
     virtual bool renderForeground(double deltaTime, bool* returnValue) {
-        drawer->renderTexture(foreground, 0, 0);
+        drawer->renderTexture(textures->foreground, 0, 0);
         return false;
     }
 
     virtual void renderUI(double deltaTime) {
-        drawer->renderUI(deltaTime, ui_textures, player_stats);
+        drawer->renderUI(deltaTime, textures, player_stats);
     }
 
     virtual bool handleInput(SDL_Event e, bool* returnValue) {
@@ -104,23 +97,19 @@ public:
     }
 
     SDL_Texture* getBackground() {
-        return background;
+        return textures->background;
     }
 
     SDL_Texture* getForeground() {
-        return foreground;
+        return textures->foreground;
     }
 
     Player_Stats* getPlayerStats() {
         return player_stats;
     }
 
-    Game_Textures* getGameTextures() {
-        return game_textures;
-    }
-
-    UI_Textures* getUiTextures() {
-        return ui_textures;
+    Textures* getTextures() {
+        return textures;
     }
 };
 
@@ -136,11 +125,10 @@ private:
     DogSniffing dogSniffing;
     DogJumping dogJumping;
 public:
-    IntroCutScene(Drawer *drawer, SDL_Texture *background, SDL_Texture *foreground, Player_Stats *player_stats,
-                  Game_Textures *game_textures, UI_Textures *ui_textures)
-        : Environment(drawer, background, foreground, player_stats, game_textures, ui_textures),
-          dogSniffing(game_textures->dog_sniffing, 7),
-          dogJumping(game_textures->dog_jumping, 90) {
+    IntroCutScene(Drawer *drawer, Player_Stats *player_stats, Textures *textures)
+        : Environment(drawer, player_stats, textures),
+          dogSniffing(textures->dog_sniffing, 7),
+          dogJumping(textures->dog_jumping, 90) {
         cutSceneState = SNIFFING;
     }
 
@@ -193,11 +181,11 @@ private:
     DogSuccess dogSuccess;
 public:
     SuccessCutScene(Environment* env, int duckX, DuckColours duckColour) : Environment(env),
-          dogSuccess(std::max(120, std::min(duckX, 210)), 157, 120, game_textures->dog_success, duckColour, 0.1) {
+          dogSuccess(std::max(120, std::min(duckX, 210)), 157, 120, textures->dog_success, duckColour, 0.1) {
     }
     SuccessCutScene(Environment* env, int duckX, DuckColours duck1Colour, DuckColours duck2Colour)
         : Environment(env),
-          dogSuccess(std::max(120, std::min(duckX, 210)), 157, 120, game_textures->dog_success, duck1Colour, duck2Colour, 0.1) {
+          dogSuccess(std::max(120, std::min(duckX, 210)), 157, 120, textures->dog_success, duck1Colour, duck2Colour, 0.1) {
     }
 
     bool renderBackground(double deltaTime, bool* returnValue) override {
@@ -216,7 +204,7 @@ private:
     DogFailure dogFailure;
 public:
     explicit FailureCutScene(Environment* env)
-        : Environment(env), dogFailure(213, 157, 120, game_textures->dog_failure, 0.1, 10) {
+        : Environment(env), dogFailure(213, 157, 120, textures->dog_failure, 0.1, 10) {
     }
 
     bool renderBackground(double deltaTime, bool* returnValue) override {
@@ -237,8 +225,8 @@ private:
     GameType gameType = NONE;
 
 public:
-    MainMenu(Drawer *drawer, Game_Textures* game_textures, UI_Textures* ui_textures)
-        : Environment(drawer, nullptr, nullptr, nullptr, game_textures, ui_textures) {
+    MainMenu(Drawer *drawer, Textures* textures)
+        : Environment(drawer, nullptr, textures) {
     }
 
     bool handleInput(SDL_Event e, bool* returnValue) override {
@@ -265,7 +253,7 @@ public:
     }
 
     bool renderBackground(double deltaTime, bool* returnValue) override {
-        drawer->renderTexture(game_textures->main_menu_background, 0, 0);
+        drawer->renderTexture(textures->main_menu_background, 0, 0);
         return false;
     }
 
@@ -312,7 +300,7 @@ public:
     }
 
     bool renderBackground(double deltaTime, bool* returnValue) override {
-        drawer->renderTexture(game_textures->background_fail, 0, 0);
+        drawer->renderTexture(textures->background_fail, 0, 0);
 
         duck1->render(drawer, deltaTime);
         if (duck2 != nullptr)
@@ -325,7 +313,7 @@ public:
         if (Environment::renderForeground(deltaTime, returnValue))
             return *returnValue;
 
-        drawer->renderTexture(ui_textures->message_fly_away, 177, 60);
+        drawer->renderTexture(textures->ui_message_fly_away, 177, 60);
 
         return false;
     }
