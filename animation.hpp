@@ -15,7 +15,7 @@ private:
 public:
     SDL_Texture* texture;
 public:
-    Animation(SDL_Texture* texture, size_t numberOfFrames, int framesPerSecond) : timer(1000.0 / framesPerSecond) {
+    Animation(SDL_Texture* texture, size_t numberOfFrames, int framesPerSecond = 1) : timer(1000.0 / framesPerSecond) {
         this->texture = texture;
         frames = spriteStripRects(texture, numberOfFrames);
         currentFrame = 0;
@@ -27,7 +27,24 @@ public:
     const SDL_Rect* advance(double deltaTime) {
         if (timer.tick(deltaTime))
             currentFrame = ++currentFrame % frames.size();
+        return frame();
+    }
+
+    void reset(int framesPerSecond) {
+        timer.reset(1000.0 / framesPerSecond);
+        currentFrame = 0;
+    }
+
+    const SDL_Rect* frame() {
         return &frames[currentFrame];
+    }
+
+    int frameWidth() {
+        return frames.at(0).w;
+    }
+
+    int frameHeight() {
+        return frames.at(0).h;
     }
 };
 

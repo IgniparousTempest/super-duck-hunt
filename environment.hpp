@@ -27,14 +27,9 @@ public:
         this->ui_textures = ui_textures;
     }
 
-    Environment(Environment* other) {
-        this->drawer = other->getDrawer();
-        this->background = other->getBackground();
-        this->foreground = other->getForeground();
-        this->player_stats = other->getPlayerStats();
-        this->game_textures = other->getGameTextures();
-        this->ui_textures = other->getUiTextures();
-    }
+    Environment(Environment* other) :
+        Environment(other->getDrawer(), other->getBackground(), other->getForeground(), other->getPlayerStats(),
+                    other->getGameTextures(), other->getUiTextures()) {}
 
     /// Renders the background for this environment.
     /// \param deltaTime The time since the last frame in ms.
@@ -197,8 +192,7 @@ class SuccessCutScene : public Environment {
 private:
     DogSuccess dogSuccess;
 public:
-    SuccessCutScene(Environment* env, int duckX, DuckColours duckColour)
-        : Environment(env),
+    SuccessCutScene(Environment* env, int duckX, DuckColours duckColour) : Environment(env),
           dogSuccess(std::max(120, std::min(duckX, 210)), 157, 120, game_textures->dog_success, duckColour, 0.1) {
     }
     SuccessCutScene(Environment* env, int duckX, DuckColours duck1Colour, DuckColours duck2Colour)
@@ -221,7 +215,7 @@ class FailureCutScene : public Environment {
 private:
     DogFailure dogFailure;
 public:
-    FailureCutScene(Environment* env)
+    explicit FailureCutScene(Environment* env)
         : Environment(env), dogFailure(213, 157, 120, game_textures->dog_failure, 0.1, 10) {
     }
 
@@ -288,100 +282,50 @@ public:
     }
 };
 
-class Level : public Environment {
+class FlyAwayDuck : public Environment {
 private:
-    std::vector<Duck> ducks;
-    DuckHatchery hatchery;
-    DuckColours previousDuckColour;
+    Duck* duck1;
+    Duck* duck2;
 
 public:
-    Level(Drawer *drawer, SDL_Texture *background, SDL_Texture *foreground, Player_Stats *player_stats,
-          Game_Textures *game_textures, UI_Textures *ui_textures)
-        : Environment(drawer, background, foreground, player_stats, game_textures, ui_textures), hatchery(game_textures, drawer) {
-        ducks = {};
-        trySpawnDuck(&hatchery, &ducks, player_stats);
+    FlyAwayDuck(Environment* env, Duck* duck1, Duck* duck2 = nullptr) : Environment(env) {
+        this->duck1 = duck1;
+        this->duck2 = duck2;
+
+        this->duck1->flyUp();
+        if (this->duck2 != nullptr)
+            this->duck2->flyUp();
     }
 
     bool update(double deltaTime, bool* returnValue) override {
-        for (auto &duck : ducks)
-            duck.update(deltaTime);
+        if (Environment::update(deltaTime, returnValue))
+            return *returnValue;
 
-        auto iter = std::begin(ducks);
-        while (iter != ducks.end()) {
-            iter->update(deltaTime);
-            if (iter->y > hatchery.spawnY) {
-                if (ducks.size() == 2)
-                    previousDuckColour = iter->colour;
-                // Show success cut scene
-                else if (ducks.size() == 1) {
-                    auto x = static_cast<int>(iter->x);
-                    SuccessCutScene* successCutScene;
-                    if (player_stats->ducks_simultaneous == 2)
-                        successCutScene = new SuccessCutScene(this, x, previousDuckColour, iter->colour);
-                    else
-                        successCutScene = new SuccessCutScene(this, x, iter->colour);
-                    if (successCutScene->start()) {
-                        *returnValue = true;
-                        return true;
-                    }
-                    delete successCutScene;
-                    now = SDL_GetPerformanceCounter(); // TODO: Not very accurate
-                }
-                iter = ducks.erase(iter);
-                // Start new round
-                if (ducks.empty() && player_stats->duck_next == 10)
-                    startNewRound(player_stats);
-                // Launch new ducks
-                if (trySpawnDuck(&hatchery, &ducks, player_stats))
-                    player_stats->shots_left = 3;
-            }
-            else
-                iter++;
-        }
-    }
+        duck1->update(deltaTime);
+        if (duck2 != nullptr)
+            duck2->update(deltaTime);
 
-    bool handleInput(SDL_Event e, bool* returnValue) override {
-        if (Environment::handleInput(e, returnValue))
+        if ((!duck1->isOnScreen() && duck2 == nullptr) || (duck2 != nullptr && !duck2->isOnScreen())) {
+            *returnValue = true;
             return true;
-        if (e.type == SDL_MOUSEBUTTONDOWN) {
-            if (player_stats->shots_left > 0) {
-                player_stats->shots_left -= 1;
-
-                // See if duck was hit
-                int mX, mY;
-                SDL_GetMouseState(&mX, &mY);
-                for (auto &duck : ducks) {
-                    int wX = mX, wY = mY;
-                    drawer->screenPointToWorldPoint(&wX, &wY);
-                    if (duck.alive && wX > duck.x && wX < duck.x + duck.width() && wY > duck.y && wY < duck.y + duck.height()) {
-                        killDuck(&duck, player_stats);
-                        break;
-                    }
-                }
-                // Handle no shots left
-                if (player_stats->shots_left == 0 && livingDucks(&ducks) > 0) {
-                    FailureCutScene(this).start();
-                }
-            }
         }
-        return false;
     }
 
     bool renderBackground(double deltaTime, bool* returnValue) override {
-        Environment::renderBackground(deltaTime, returnValue);
+        drawer->renderTexture(game_textures->background_fail, 0, 0);
 
-        for (auto &duck : ducks)
-            duck.render(drawer, deltaTime);
+        duck1->render(drawer, deltaTime);
+        if (duck2 != nullptr)
+            duck2->render(drawer, deltaTime);
 
         return false;
     }
 
     bool renderForeground(double deltaTime, bool* returnValue) override {
-        Environment::renderForeground(deltaTime, returnValue);
+        if (Environment::renderForeground(deltaTime, returnValue))
+            return *returnValue;
 
-        for (auto &duck : ducks)
-            if (duck.isFalling())
-                duck.renderScore(drawer);
+        drawer->renderTexture(ui_textures->message_fly_away, 177, 60);
 
         return false;
     }

@@ -1,8 +1,7 @@
 #include <iostream>
 #include "cleanup.hpp"
 #include "dog.hpp"
-#include "level_logic.hpp"
-#include "environment.hpp"
+#include "level.hpp"
 
 //const int SCREEN_WIDTH  = 960;
 //const int SCREEN_HEIGHT = 540;
@@ -50,22 +49,18 @@ int main(int argc, char* argv []) {
     Player_Stats player_stats;
     if (!quit) {
         if (mainMenu.resultGameType() == SINGLE)
-            player_stats = singleDuckGame();
+            player_stats = Level::singleDuckGame();
         else if (mainMenu.resultGameType() == DOUBLE)
-            player_stats = doubleDuckGame();
+            player_stats = Level::doubleDuckGame();
         else
             quit = true;
     }
 
-    if (!quit) {
-        IntroCutScene introCutScene(&drawer, background, foreground, &player_stats, &game_textures, &ui_textures);
-        quit = introCutScene.start();
-    }
+    if (!quit)
+        quit = IntroCutScene(&drawer, background, foreground, &player_stats, &game_textures, &ui_textures).start();
 
-    if (!quit) {
-        Level level(&drawer, background, foreground, &player_stats, &game_textures, &ui_textures);
-        level.start();
-    }
+    if (!quit)
+        SinglePlayerGame(&drawer, background, foreground, &player_stats, &game_textures, &ui_textures).start();
 
     cleanup(background, foreground, &ui_textures, &game_textures, renderer, window);
     SDL_Quit();

@@ -3,9 +3,11 @@
 
 #include <random>
 #include <array>
+#include <utility>
 #include "textures.hpp"
 #include "timer.hpp"
 #include "drawing.hpp"
+#include "animation.hpp"
 
 enum DuckColours { blue, brown, red };
 const double pi = std::acos(-1);
@@ -24,25 +26,31 @@ private:
     int score;
     double angle;
     double speed;
-    SDL_Texture* texture;
-    std::array<SDL_Rect, 11> frames;
     SDL_Texture* scoreTexture;
     SDL_Rect scoreFrame;
 
     // animation
     /// True when the duck is first out of the bush it spawns in.
     bool isFreeOfBush;
-    int currentFrame;
-    Timer animTimer;
+    bool stayOnScreen;
+    Timer deadTimer;
+    Animation* current = nullptr;
+    Animation dead;
+    Animation falling;
+    Animation flyDiagonal;
+    Animation flyHorizontal;
+    Animation flyVertical;
 
     double scaledLeftBoundary;
     double scaledRightBoundary;
 
 public:
-    Duck(int index, DuckColours colour, int spawn_x, int spawn_y, double speed, int score, SDL_Texture* texture,
-         std::array<SDL_Rect, 11> frames, int framesPerSecond, double scaledLeftBoundary, double scaledRightBoundary,
-         SDL_Texture* scoreTexture, SDL_Rect scoreFrame, std::mt19937* mt) :
-        animTimer(1000.0 / framesPerSecond) {
+    Duck(int index, DuckColours colour, int spawn_x, int spawn_y, double speed, int score, int framesPerSecond,
+         Animation dead, Animation falling, Animation flyDiagonal, Animation flyHorizontal, Animation flyVertical,
+         double scaledLeftBoundary, double scaledRightBoundary, SDL_Texture* scoreTexture, SDL_Rect scoreFrame,
+         std::mt19937* mt) : dead(std::move(dead)), falling(std::move(falling)), flyDiagonal(std::move(flyDiagonal)),
+                             flyHorizontal(std::move(flyHorizontal)), flyVertical(std::move(flyVertical)),
+                             scoreFrame(scoreFrame), deadTimer(500.0) {
         this->mt = mt;
         this->index = index;
         this->colour = colour;
@@ -53,15 +61,18 @@ public:
         this->speed = speed;
         angle = randAngle(pi / 4.0, 3.0 * pi / 4.0);
         this->score = score;
-        this->texture = texture;
-        this->frames = frames;
+        stayOnScreen = true;
         isFreeOfBush = false;
-        currentFrame = 3;
+        deadTimer.disable();
+        this->dead.reset(framesPerSecond);
+        this->falling.reset(framesPerSecond);
+        this->flyDiagonal.reset(framesPerSecond);
+        this->flyHorizontal.reset(framesPerSecond);
+        this->flyVertical.reset(framesPerSecond);
         this->scaledLeftBoundary = scaledLeftBoundary;
         this->scaledRightBoundary = scaledRightBoundary;
         alive = true;
         this->scoreTexture = scoreTexture;
-        this->scoreFrame = scoreFrame;
         std::cout << "Spawning a new duck" << std::endl;
     }
 
@@ -74,17 +85,17 @@ public:
 
         // Bounce duck on screen edge
         if (alive) {
-            if (new_y < 0) // top
+            if (stayOnScreen && new_y < 0) // top
                 newAngle = randAngle(7.0 * pi / 6.0, 11.0 * pi / 6.0);
-            if (new_y > 155 - frames[0].h) { // bottom
+            if (new_y > 155 - dead.frameHeight()) { // bottom
                 if (isFreeOfBush)
                     newAngle = randAngle(pi / 4.0, 3.0 * pi / 4.0);
             }
             else
                 isFreeOfBush = true;
-            if (new_x < scaledLeftBoundary) // left
+            if (stayOnScreen && new_x < scaledLeftBoundary) // left
                 newAngle = std::fmod(randAngle(5.0 * pi / 6.0, 18.0 * pi / 6.0), 2.0 * pi);
-            if (new_x > scaledRightBoundary) // right
+            if (stayOnScreen && new_x > scaledRightBoundary) // right
                 newAngle = randAngle(2.0 * pi / 3.0, 4.0 * pi / 3.0);
 
             // Apply new angle or position
@@ -94,9 +105,9 @@ public:
                 new_x = std::abs(std::cos(angle));
                 new_y = std::abs(std::sin(angle));
                 if (new_x > new_y)
-                    currentFrame = 0;
+                    current = &flyHorizontal;
                 else
-                    currentFrame = 3;
+                    current = &flyDiagonal;
             }
         }
         // Move duck
@@ -107,19 +118,15 @@ public:
     }
 
     void render(Drawer* drawer, double deltaTime) {
+        // TODO: I can't initialise current in the constructor?
+        if (current == nullptr)
+            current = &this->flyDiagonal;
+
         // Select next frame
-        if (animTimer.tick(deltaTime)) {
-            if (currentFrame < 3)
-                currentFrame = (currentFrame + 1) % 3;
-            else if (currentFrame < 6)
-                currentFrame = (currentFrame - 3 + 1) % 3 + 3;
-            else if (currentFrame == 6) {
-                animTimer.reset(100.0);
-                currentFrame = 7;
-                speed = 0.05;
-            }
-            else if (currentFrame < 11)
-                currentFrame = (currentFrame - 7 + 1) % 4 + 7;
+        if (deadTimer.tick(deltaTime)) {
+            current = &falling;
+            deadTimer.disable();
+            speed = 0.05;
         }
 
         // Flip texture if going left
@@ -127,7 +134,7 @@ public:
         if (std::cos(angle) < 0.0)
             flip = SDL_FLIP_HORIZONTAL;
 
-        drawer->renderTexture(texture, static_cast<int>(x), static_cast<int>(y), &frames[currentFrame], 0.0, nullptr, flip);
+        drawer->renderTexture(current->texture, static_cast<int>(x), static_cast<int>(y), current->advance(deltaTime), 0.0, nullptr, flip);
     }
 
     void renderScore(Drawer* drawer) {
@@ -136,8 +143,8 @@ public:
 
     int kill() {
         alive = false;
-        currentFrame = 6;
-        animTimer.reset(500.0);
+        deadTimer.enable();
+        current = &dead;
         speed = 0.0;
         angle = 3.0 * pi / 2.0;
         xDied = static_cast<int>(x);
@@ -145,18 +152,34 @@ public:
         return score;
     }
 
+    void flyUp() {
+        stayOnScreen = false;
+        angle = pi / 2.0;
+        current = &flyVertical;
+    }
+
+    bool isOnScreen() {
+        if (y < 0)
+            return false;
+        else if (x < scaledLeftBoundary)
+            return false;
+        else if (x > scaledRightBoundary)
+            return false;
+        return true;
+    }
+
     /// Checks whether the duck has died and is falling back to the ground.
     /// \return true if falling, false otherwise.
     bool isFalling() {
-        return !alive && currentFrame > 6 && currentFrame < 11;
+        return !alive && current != &dead && current != &falling;
     }
 
     int width() {
-        return frames[0].w;
+        return dead.frameWidth();
     }
 
     int height() {
-        return frames[0].h;
+        return dead.frameHeight();
     }
 
 private:
@@ -176,60 +199,85 @@ public:
 private:
     std::random_device rd;
     std::mt19937 mt;
-    std::array<SDL_Rect, 11> blueDuckFrames;
-    std::array<SDL_Rect, 11> brownDuckFrames;
-    std::array<SDL_Rect, 11> redDuckFrames;
+    Animation blueDead;
+    Animation blueFalling;
+    Animation blueFlyingDiagonal;
+    Animation blueFlyingHorizontal;
+    Animation blueFlyingVertical;
+    Animation brownDead;
+    Animation brownFalling;
+    Animation brownFlyingDiagonal;
+    Animation brownFlyingHorizontal;
+    Animation brownFlyingVertical;
+    Animation redDead;
+    Animation redFalling;
+    Animation redFlyingDiagonal;
+    Animation redFlyingHorizontal;
+    Animation redFlyingVertical;
     std::array<SDL_Rect, 8> duckScoreFrames;
-    SDL_Texture* blueDuckTexture;
-    SDL_Texture* brownDuckTexture;
-    SDL_Texture* redDuckTexture;
     SDL_Texture* duckScoreTexture;
 
     double scaledLeftBoundary;
     double scaledRightBoundary;
 
 public:
-    DuckHatchery(Game_Textures* game_textures, Drawer* drawer) {
+    DuckHatchery(Game_Textures* textures, Drawer* drawer)
+        : blueDead(textures->duck_blue_dead, 1), blueFalling(textures->duck_blue_falling, 4),
+          blueFlyingDiagonal(textures->duck_blue_diagonal, 3), blueFlyingHorizontal(textures->duck_blue_horizontal, 3),
+          blueFlyingVertical(textures->duck_blue_vertical, 3),
+          brownDead(textures->duck_brown_dead, 1), brownFalling(textures->duck_brown_falling, 4),
+          brownFlyingDiagonal(textures->duck_brown_diagonal, 3), brownFlyingHorizontal(textures->duck_brown_horizontal, 3),
+          brownFlyingVertical(textures->duck_brown_vertical, 3),
+          redDead(textures->duck_red_dead, 1), redFalling(textures->duck_red_falling, 4),
+          redFlyingDiagonal(textures->duck_red_diagonal, 3), redFlyingHorizontal(textures->duck_red_horizontal, 3),
+          redFlyingVertical(textures->duck_red_vertical, 3) {
         mt = std::mt19937(rd());
-        blueDuckTexture = game_textures->duck_blue;
-        brownDuckTexture = game_textures->duck_brown;
-        redDuckTexture = game_textures->duck_red;
-        duckScoreTexture = game_textures->duck_score;
-        blueDuckFrames = spriteStripRects<11>(blueDuckTexture);
-        brownDuckFrames = spriteStripRects<11>(brownDuckTexture);
-        redDuckFrames = spriteStripRects<11>(redDuckTexture);
+        duckScoreTexture = textures->duck_score;
         duckScoreFrames = spriteStripRects<8>(duckScoreTexture);
 
         scaledLeftBoundary = -drawer->x_offset / drawer->scale;
-        scaledRightBoundary = drawer->window_width / drawer->scale + scaledLeftBoundary - blueDuckFrames[0].w;
+        scaledRightBoundary = drawer->window_width / drawer->scale + scaledLeftBoundary - blueDead.frameWidth();
     }
 
     Duck newDuck(DuckColours duck_colour, int score, int round, int duckIndex) {
-        SDL_Texture* texture;
-        std::array<SDL_Rect, 11>* frames;
+        Animation* dead;
+        Animation* falling;
+        Animation* flyDiagonal;
+        Animation* flyHorizontal;
+        Animation* flyVertical;
         SDL_Rect* scoreFrame;
         switch (duck_colour) {
             case blue:
                 scoreFrame = &duckScoreFrames[2];
-                texture = blueDuckTexture;
-                frames = &blueDuckFrames;
+                dead = &blueDead;
+                falling = &blueFalling;
+                flyDiagonal = &blueFlyingDiagonal;
+                flyHorizontal = &blueFlyingHorizontal;
+                flyVertical = &blueFlyingVertical;
                 break;
             case red:
                 scoreFrame = &duckScoreFrames[3];
-                texture = redDuckTexture;
-                frames = &redDuckFrames;
+                dead = &redDead;
+                falling = &redFalling;
+                flyDiagonal = &redFlyingDiagonal;
+                flyHorizontal = &redFlyingHorizontal;
+                flyVertical = &redFlyingVertical;
                 break;
             default:
                 scoreFrame = &duckScoreFrames[0];
-                texture = brownDuckTexture;
-                frames = &brownDuckFrames;
+                dead = &brownDead;
+                falling = &brownFalling;
+                flyDiagonal = &brownFlyingDiagonal;
+                flyHorizontal = &brownFlyingHorizontal;
+                flyVertical = &brownFlyingVertical;
                 break;
         }
         double speed = 0.05 + 0.01 * round;
         std::uniform_int_distribution<int> dist(spawnXLow, spawnXHigh);
         int spawn_x = dist(mt);
         int spawn_y = spawnY;
-        return {duckIndex, duck_colour, spawn_x, spawn_y, speed, score, texture, *frames, 10 + round, scaledLeftBoundary, scaledRightBoundary, duckScoreTexture, *scoreFrame, &mt};
+        return {duckIndex, duck_colour, spawn_x, spawn_y, speed, score, 10 + round, *dead, *falling, *flyDiagonal,
+            *flyHorizontal, *flyVertical, scaledLeftBoundary, scaledRightBoundary, duckScoreTexture, *scoreFrame, &mt};
     }
 };
 
