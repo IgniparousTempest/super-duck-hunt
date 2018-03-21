@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include "dog.hpp"
 #include "textures.hpp"
+#include "message.hpp"
 
 class Environment {
 protected:
@@ -124,11 +125,12 @@ private:
     IntroCutSceneState cutSceneState;
     DogSniffing dogSniffing;
     DogJumping dogJumping;
+    RoundMessage roundMessage;
+
 public:
     IntroCutScene(Drawer *drawer, Player_Stats *player_stats, Textures *textures)
-        : Environment(drawer, player_stats, textures),
-          dogSniffing(textures->dog_sniffing, 7),
-          dogJumping(textures->dog_jumping, 90) {
+        : Environment(drawer, player_stats, textures), dogSniffing(textures->dog_sniffing, 7),
+          dogJumping(textures->dog_jumping, 90), roundMessage(189, 52, 2500.0, textures->ui_message_round, 1, textures->ui_numbers_white) {
         cutSceneState = SNIFFING;
     }
 
@@ -153,6 +155,8 @@ public:
                 *returnValue = false;
                 return true;
             }
+
+        roundMessage.render(drawer, deltaTime);
         return false;
     }
 
@@ -294,7 +298,7 @@ public:
             duck2->update(deltaTime);
 
         if ((!duck1->isOnScreen() && duck2 == nullptr) || (duck2 != nullptr && !duck2->isOnScreen())) {
-            *returnValue = true;
+            *returnValue = false;
             return true;
         }
     }

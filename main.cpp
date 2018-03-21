@@ -58,7 +58,7 @@ int main(int argc, char* argv []) {
             quit = IntroCutScene(&drawer, &player_stats, &textures).start();
 
         if (!quit)
-            SinglePlayerGame(&drawer, &player_stats, &textures).start();
+            quit = SinglePlayerGame(&drawer, &player_stats, &textures).start();
     }
 
     cleanup(&textures, renderer, window);

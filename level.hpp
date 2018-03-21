@@ -197,17 +197,13 @@ public:
                 // Handle no shots left
                 if (player_stats->shots_left == 0 && livingDucks() > 0) {
                     player_stats->ducks_current = {};
-                    if (ducks.size() == 1) {
-                        if (FlyAwayDuck(this, &ducks.at(0)).start()) {
-                            *returnValue = true;
-                            return true;
-                        }
+                    Duck* duck2 = nullptr;
+                    if (ducks.size() == 2)
+                        duck2 = &ducks.at(1);
+                    if (FlyAwayDuck(this, &ducks.at(0), duck2).start()) {
+                        *returnValue = true;
+                        return true;
                     }
-                    else if (ducks.size() == 2)
-                        if (FlyAwayDuck(this, &ducks.at(0), &ducks.at(1)).start()) {
-                            *returnValue = true;
-                            return true;
-                        }
                     ducks = {};
                     if (FailureCutScene(this).start()) {
                         *returnValue = true;
