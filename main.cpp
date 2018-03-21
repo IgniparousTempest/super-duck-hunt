@@ -1,5 +1,5 @@
 #include <iostream>
-#include "cleanup.hpp"
+#include "environment.hpp"
 #include "dog.hpp"
 #include "level_logic.hpp"
 #include "cutscene.hpp"
