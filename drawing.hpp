@@ -77,7 +77,7 @@ public:
     /// \param y The y coordinate to draw to.
     /// \param w The width of the rendered texture in pixels.
     /// \param h The height of the rendered texture in pixels.
-    void renderTexture(SDL_Texture *tex, int x, int y, int w, int h, SDL_Rect *clip = nullptr, double angle = 0.0, SDL_Point* center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE) {
+    void renderTexture(SDL_Texture *tex, int x, int y, int w, int h, const SDL_Rect *clip = nullptr, double angle = 0.0, SDL_Point* center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE) {
         //Setup the destination rectangle to be at the position we want
         SDL_Rect dst = {.x = x, .y = y, .w = w, .h = h};
         SDL_RenderCopyEx(renderer, tex, clip, &dst, angle, center, flip);
@@ -87,7 +87,7 @@ public:
     /// \param tex The source texture we want to draw.
     /// \param x The x coordinate to draw to.
     /// \param y The y coordinate to draw to.
-    void renderTexture(SDL_Texture *tex, int x, int y, SDL_Rect *clip = nullptr, double angle = 0.0, SDL_Point* center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE) {
+    void renderTexture(SDL_Texture *tex, int x, int y, const SDL_Rect *clip = nullptr, double angle = 0.0, SDL_Point* center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE) {
         int w, h;
         //Query the texture to get its width and height to use
         if (clip != nullptr) {

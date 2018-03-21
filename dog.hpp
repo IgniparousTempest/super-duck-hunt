@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include "drawing.hpp"
 #include "duck.hpp"
+#include "animation.hpp"
 
 class DogSniffing {
 private:
@@ -210,27 +211,21 @@ private:
     int x;
     double y;
     double speed;
-    SDL_Texture* texture;
-    SDL_Rect frames[2];
-    int currentFrame;
     DogSuccessState state;
     Timer timer = Timer(0);
-    Timer animTimer;
+    Animation animation;
     int yTopLimit;
     int yBottomLimit;
 
 public:
     DogFailure(int x, int yBottom, int yTop, SDL_Texture* texture_failure, double speed, int framePerSecond)
-        : animTimer(1000.0 / framePerSecond) {
+        : animation(texture_failure, 2, framePerSecond) {
         this->x = x;
         y = yBottom;
         yBottomLimit = yBottom;
         yTopLimit = yTop;
-        texture = texture_failure;
         this->speed = speed;
         state = UP;
-        spriteStripRects(texture_failure, 2, frames);
-        currentFrame = 0;
     }
 
     ///
@@ -243,9 +238,7 @@ public:
         else if (state == DOWN)
             y += speed * deltaTime;
 
-        if (animTimer.tick(deltaTime))
-            currentFrame = (currentFrame + 1) % 2;
-        drawer->renderTexture(texture, x, static_cast<int>(y), &frames[currentFrame]);
+        drawer->renderTexture(animation.texture, x, static_cast<int>(y), animation.advance(deltaTime));
 
         if (state == UP && y < yTopLimit) {
             state = STOPPED;

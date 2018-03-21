@@ -4,6 +4,8 @@
 #include "SDL2/SDL.h"
 #include <SDL2/SDL_image.h>
 #include <array>
+#include <vector>
+#include <algorithm>
 #include "errors.hpp"
 
 struct UI_Textures {
@@ -59,31 +61,28 @@ SDL_Texture* loadTexture(const std::string &file, SDL_Renderer *ren){
 
 /// Determines the rects for each frame on a animation strip, this assumes equal width and no gaps.
 /// \param texture The texture to split.
-/// \param framesCount the number of frames, this should be the same length of the frames array.
-/// \param frames The array to write to.
-void spriteStripRects(SDL_Texture* texture, int framesCount, SDL_Rect* frames) {
-    int w, h;
-    SDL_QueryTexture(texture, nullptr, nullptr, &w, &h);
-    w /= framesCount;
-    for (int i = 0; i < framesCount; ++i) {
-        frames[i].x = w * i;
-        frames[i].y = 0;
-        frames[i].w = w;
-        frames[i].h = h;
-    }
-}
-template <size_t size>
-std::array<SDL_Rect, size> spriteStripRects(SDL_Texture* texture) {
-    std::array<SDL_Rect, size> frames;
+/// \param size the number of frames.
+/// \return The frames.
+std::vector<SDL_Rect> spriteStripRects(SDL_Texture* texture, size_t size) {
+    std::vector<SDL_Rect> frames;
+    frames.reserve(size);
     int w, h;
     SDL_QueryTexture(texture, nullptr, nullptr, &w, &h);
     w /= size;
     for (int i = 0; i < size; ++i) {
-        frames[i].x = w * i;
-        frames[i].y = 0;
-        frames[i].w = w;
-        frames[i].h = h;
+        // x, y, w, h
+        frames.push_back({w * i, 0, w, h});
     }
+
+    return frames;
+}
+
+template <size_t size>
+std::array<SDL_Rect, size> spriteStripRects(SDL_Texture* texture) {
+    std::array<SDL_Rect, size> frames;
+
+    auto v = spriteStripRects(texture, size);
+    std::copy_n(std::make_move_iterator(v.begin()), size, frames.begin());
 
     return frames;
 }
