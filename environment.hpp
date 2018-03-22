@@ -336,6 +336,7 @@ private:
     Player_Stats stats;
     Timer timer;
     bool showTemplate;
+    int flashes;
 
 public:
     explicit DuckUIFlash(Environment* env) : Environment(env), timer(500.0) {
@@ -343,6 +344,15 @@ public:
         stats_template.ducks_current = {};
         stats = stats_template;
         showTemplate = true;
+        flashes = 0;
+    }
+
+    bool update(double deltaTime) override {
+        Environment::update(deltaTime);
+
+        if (flashes >= 10)
+            return true;
+        return false;
     }
 
     void renderUI(double deltaTime) override {
@@ -356,6 +366,7 @@ public:
                     stats.ducks_hit[i] = false;
             }
             showTemplate = !showTemplate;
+            flashes++;
         }
 
         drawer->renderUI(deltaTime, textures, &stats);

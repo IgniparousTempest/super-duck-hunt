@@ -2,7 +2,7 @@
 #include "cleanup.hpp"
 #include "dog.hpp"
 #include "level.hpp"
-#include "scores.hpp"
+#include "config.hpp"
 
 //const int SCREEN_WIDTH  = 960;
 //const int SCREEN_HEIGHT = 540;
