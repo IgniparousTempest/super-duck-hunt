@@ -27,6 +27,16 @@ A rewrite of the NES game "Duck Hunt" in C++ and SDL2
 
 #### Duck Speed
 
-#### Dog Speed
+#### Duck Fly Off Screen Speed
+
+#### Dog Sniffing Speed
+
+#### Dog Jumping Speed
+
+#### Dog Laughing Speed
+
+#### Dog Raising Dead Ducks Speed
 
 #### UI Ducks Flash Speed
+
+#### UI Ducks Flash: Number of Flashes

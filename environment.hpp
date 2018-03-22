@@ -30,6 +30,7 @@ public:
     /// Renders the background for this environment.
     /// \param deltaTime The time since the last frame in ms.
     /// \return true if environment should end, false otherwise.
+    /// \throws QuitTrigger if the user tried to quit the game.
     virtual bool renderBackground(double deltaTime) {
         drawer->renderTexture(textures->background, 0, 0);
         return false;
@@ -39,15 +40,27 @@ public:
         return false;
     }
 
+    /// Renders the foreground for this environment. Called after ::renderBackground(double deltaTime).
+    /// \param deltaTime The time since the last frame in ms.
+    /// \return true if environment should end, false otherwise.
+    /// \throws QuitTrigger if the user tried to quit the game.
     virtual bool renderForeground(double deltaTime) {
         drawer->renderTexture(textures->foreground, 0, 0);
         return false;
     }
 
+    /// Renders the UI for this environment.
+    /// \param deltaTime The time since the last frame in ms.
+    /// \return true if environment should end, false otherwise.
+    /// \throws QuitTrigger if the user tried to quit the game.
     virtual void renderUI(double deltaTime) {
         drawer->renderUI(deltaTime, textures, player_stats);
     }
 
+    /// handles the user input for this environment.
+    /// \param deltaTime The time since the last frame in ms.
+    /// \return true if environment should end, false otherwise.
+    /// \throws QuitTrigger if the user tried to quit the game.
     virtual bool handleInput(SDL_Event e) {
         if (e.type == SDL_QUIT)
             throw QuitTrigger();
@@ -118,6 +131,7 @@ enum IntroCutSceneState {
     FALLING
 };
 
+/// Shows the intro to the game, i.e. the dog sniffing and jumping into the bushes.
 class IntroCutScene : public Environment {
 private:
     IntroCutSceneState cutSceneState;
@@ -174,6 +188,7 @@ public:
     }
 };
 
+/// Shows the cut scene for successfully shooting a duck or ducks, i.e. the dog rising from the bushes holding the dead ducks.
 class SuccessCutScene : public Environment {
 private:
     DogSuccess dogSuccess;
@@ -193,6 +208,7 @@ public:
     }
 };
 
+/// Shows the cut scene for failing to shoot any ducks, i.e. the dog rising from the bushes and laughing.
 class FailureCutScene : public Environment {
 private:
     DogFailure dogFailure;
@@ -210,6 +226,7 @@ public:
 
 enum GameType {NONE, SINGLE, DOUBLE};
 
+/// The main menu environment.
 class MainMenu : public Environment {
 private:
     GameType gameType = NONE;
@@ -261,6 +278,7 @@ public:
     }
 };
 
+/// When the duck flew away after the player runs out of bullets.
 class FlyAwayDuck : public Environment {
 private:
     Duck* duck1;
@@ -306,6 +324,7 @@ public:
     }
 };
 
+/// The dog laughs at the player and the game over message is displayed.
 class GameOver : public Environment {
 private:
     DogGameOver dogGameOver;
@@ -330,6 +349,7 @@ public:
     }
 };
 
+/// Flashes the ducks' hit ui after the round is complete.
 class DuckUIFlash : public Environment {
 private:
     Player_Stats stats_template;
@@ -337,6 +357,7 @@ private:
     Timer timer;
     bool showTemplate;
     int flashes;
+    const int maxFlashes = 5 * 2;
 
 public:
     explicit DuckUIFlash(Environment* env) : Environment(env), timer(500.0) {
@@ -350,9 +371,7 @@ public:
     bool update(double deltaTime) override {
         Environment::update(deltaTime);
 
-        if (flashes >= 10)
-            return true;
-        return false;
+        return flashes >= maxFlashes;
     }
 
     void renderUI(double deltaTime) override {
@@ -370,6 +389,40 @@ public:
         }
 
         drawer->renderUI(deltaTime, textures, &stats);
+    }
+};
+
+/// Moves ducks' hit ui to the left after a round is complete.
+class DuckUICoalesce : public Environment {
+private:
+    Timer timer;
+    bool done;
+
+public:
+    explicit DuckUICoalesce(Environment* env) : Environment(env), timer(500.0) {
+        done = false;
+    }
+
+    bool update(double deltaTime) override {
+        Environment::update(deltaTime);
+
+        return done;
+    }
+
+    void renderUI(double deltaTime) override {
+        Environment::renderUI(deltaTime);
+
+        if (timer.tick(deltaTime)) {
+            done = true;
+            for (int i = 1; i < player_stats->ducks_hit.size(); ++i)
+                if (!player_stats->ducks_hit[i - 1] && player_stats->ducks_hit[i]) {
+                    player_stats->ducks_hit[i] = false;
+                    player_stats->ducks_hit[i - 1] = true;
+                    done = false;
+                }
+        }
+
+        drawer->renderUI(deltaTime, textures, player_stats);
     }
 };
 

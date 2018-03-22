@@ -13,6 +13,7 @@ void logSDLError(std::ostream &os, const std::string &msg){
     os << msg << " error: " << SDL_GetError() << std::endl;
 }
 
+/// This exception indicates that the game was quit.
 struct QuitTrigger : public std::exception
 {
     const char* what () const throw () override {
