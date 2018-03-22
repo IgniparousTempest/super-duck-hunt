@@ -104,7 +104,7 @@ public:
         // Draw duck icons
         bool flickerTicked = flickerTimer.tick(deltaTime);
         bool isCurrentDuck;
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < player_stats->ducks_hit.size(); ++i) {
             isCurrentDuck = std::find(player_stats->ducks_current.begin(), player_stats->ducks_current.end(), i) != player_stats->ducks_current.end();
             if (player_stats->ducks_hit[i])
                 renderTexture(textures->ui_duck_lit, 181 + i * 8, 210);

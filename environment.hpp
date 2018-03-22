@@ -333,7 +333,7 @@ private:
     DogGameOver dogGameOver;
 
 public:
-    GameOver(Environment* env) : Environment(env), dogGameOver(213, 157, 120, textures->dog_failure, 0.1, 10) {
+    explicit GameOver(Environment* env) : Environment(env), dogGameOver(213, 157, 120, textures->dog_failure, 0.1, 10) {
     }
 
     bool renderBackground(double deltaTime, bool* returnValue) override {
@@ -354,6 +354,38 @@ public:
         drawer->renderTexture(textures->ui_message_game_over, 173, 44);
 
         return false;
+    }
+};
+
+class DuckUIFlash : public Environment {
+private:
+    Player_Stats stats_template;
+    Player_Stats stats;
+    Timer timer;
+    bool showTemplate;
+
+public:
+    explicit DuckUIFlash(Environment* env) : Environment(env), timer(500.0) {
+        stats_template = *player_stats;
+        stats_template.ducks_current = {};
+        stats = stats_template;
+        showTemplate = true;
+    }
+
+    void renderUI(double deltaTime) override {
+        Environment::renderUI(deltaTime);
+
+        if (timer.tick(deltaTime)) {
+            for (int i = 0; i < stats.ducks_hit.size(); ++i) {
+                if (showTemplate)
+                    stats.ducks_hit[i] = stats_template.ducks_hit[i];
+                else
+                    stats.ducks_hit[i] = false;
+            }
+            showTemplate = !showTemplate;
+        }
+
+        drawer->renderUI(deltaTime, textures, &stats);
     }
 };
 

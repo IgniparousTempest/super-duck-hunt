@@ -59,15 +59,8 @@ public:
             duck_hit = false;
     }
 
-    bool trySpawnDuckOrStartNewRound() {
-        // Start new round
-        if (ducks.empty() && player_stats->duck_next == 10 && ducksHit() > player_stats->ducks_needed)
-            startNewRound();
-        // Launch new ducks
-        if (trySpawnDuck())
-            player_stats->shots_left = 3;
-
-        return !player_stats->ducks_current.empty();
+    bool areDucksFinished() {
+        return ducks.empty() && player_stats->duck_next == 10;
     }
 
     int ducksHit() {
@@ -166,8 +159,7 @@ public:
                 iter = ducks.erase(iter);
 
                 if (!trySpawnDuckOrStartNewRound()) {
-                    GameOver(this).start();
-                    *returnValue = false;
+                    *returnValue = true;
                     return true;
                 }
             }
@@ -210,10 +202,9 @@ public:
                         return true;
                     }
                     now = SDL_GetPerformanceCounter(); // TODO: Not very accurate
-
+                    
                     if (!trySpawnDuckOrStartNewRound()) {
-                        GameOver(this).start();
-                        *returnValue = false;
+                        *returnValue = true;
                         return true;
                     }
                 }
@@ -239,6 +230,25 @@ public:
                 duck.renderScore(drawer);
 
         return false;
+    }
+
+    bool trySpawnDuckOrStartNewRound() {
+        // Start new round
+        if (areDucksFinished())
+            if (ducksHit() > player_stats->ducks_needed) {
+                DuckUIFlash(this).start();
+                now = SDL_GetPerformanceCounter(); // TODO: Not very accurate
+                startNewRound();
+            }
+            else {
+                GameOver(this).start();
+                return false;
+            }
+        // Launch new ducks
+        if (trySpawnDuck())
+            player_stats->shots_left = 3;
+
+        return true;
     }
 };
 

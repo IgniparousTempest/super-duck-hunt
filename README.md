@@ -22,3 +22,11 @@ A rewrite of the NES game "Duck Hunt" in C++ and SDL2
 | 15 through 19 | 9 out of 10  |
 | 20 through 99 | 10 out of 10 |
 | 0 onwards     | 10 out of 10 |
+
+### Timing
+
+#### Duck Speed
+
+#### Dog Speed
+
+#### UI Ducks Flash Speed

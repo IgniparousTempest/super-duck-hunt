@@ -13,4 +13,11 @@ void logSDLError(std::ostream &os, const std::string &msg){
     os << msg << " error: " << SDL_GetError() << std::endl;
 }
 
+struct QuitTrigger : public std::exception
+{
+    const char* what () const throw () override {
+        return "A quit event was triggered";
+    }
+};
+
 #endif //DUCKHUNT_ERRORS_HPP

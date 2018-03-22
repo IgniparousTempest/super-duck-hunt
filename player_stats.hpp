@@ -4,7 +4,7 @@
 #include <vector>
 
 struct Player_Stats {
-    bool ducks_hit[10];
+    std::array<bool, 10> ducks_hit;
     /// The ducks currently on screen, e.g. duck 5 and duck 6.
     std::vector<int> ducks_current;
     int ducks_needed;
