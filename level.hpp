@@ -156,7 +156,8 @@ public:
                 }
                 iter = ducks.erase(iter);
 
-                trySpawnDuckOrStartNewRound();
+                if (trySpawnDuckOrStartNewRound())
+                    return true;
             }
             else
                 iter++;
@@ -191,7 +192,8 @@ public:
                     FailureCutScene(this).start();
                     now = SDL_GetPerformanceCounter(); // TODO: Not very accurate
 
-                    trySpawnDuckOrStartNewRound();
+                    if (trySpawnDuckOrStartNewRound())
+                        return true;
                 }
             }
         }
@@ -217,7 +219,7 @@ public:
         return false;
     }
 
-    void trySpawnDuckOrStartNewRound() {
+    bool trySpawnDuckOrStartNewRound() {
         // Start new round
         if (areDucksFinished()) {
             DuckUICoalesce(this).start();
@@ -229,12 +231,14 @@ public:
             }
             else {
                 GameOver(this).start();
-                throw QuitTrigger();
+                return true;
             }
         }
         // Launch new ducks
         if (trySpawnDuck())
             player_stats->shots_left = 3;
+
+        return false;
     }
 };
 

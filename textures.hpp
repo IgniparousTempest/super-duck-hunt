@@ -92,6 +92,48 @@ std::vector<SDL_Rect> spriteStripRects(SDL_Texture* texture, size_t size) {
     return frames;
 }
 
+Textures loadTexturesOriginal(SDL_Renderer* renderer) {
+    return {
+        .ui_bullet = loadTexture("textures/original/ui_bullet.png", renderer),
+        .ui_duck_lit = loadTexture("textures/original/ui_duck_lit.png", renderer),
+        .ui_duck_white = loadTexture("textures/original/ui_duck_white.png", renderer),
+        .ui_ducks_needed_bar = loadTexture("textures/original/ui_ducks_needed_bar.png", renderer),
+        .ui_hit = loadTexture("textures/original/ui_hit.png", renderer),
+        .ui_message_fly_away = loadTexture("textures/ui_message_fly_away.png", renderer),
+        .ui_message_game_over = loadTexture("textures/ui_message_game_over.png", renderer),
+        .ui_message_round = loadTexture("textures/ui_message_round.png", renderer),
+        .ui_numbers_green = loadTexture("textures/ui_numbers_green.png", renderer),
+        .ui_numbers_white = loadTexture("textures/ui_numbers_white.png", renderer),
+        .ui_score = loadTexture("textures/original/ui_score.png", renderer),
+        .ui_shot = loadTexture("textures/original/ui_shot.png", renderer),
+        .ui_round = loadTexture("textures/ui_round.png", renderer),
+        .background = loadTexture("textures/original/background.png", renderer),
+        .background_fail = loadTexture("textures/original/background_fail.png", renderer),
+        .dog_failure = loadTexture("textures/original/dog_failure.png", renderer),
+        .dog_jumping = loadTexture("textures/original/dog_jumping.png", renderer),
+        .dog_sniffing = loadTexture("textures/original/dog_sniffing.png", renderer),
+        .dog_success = loadTexture("textures/original/dog_success.png", renderer),
+        .duck_blue_dead = loadTexture("textures/original/duck_blue_dead.png", renderer),
+        .duck_blue_diagonal = loadTexture("textures/original/duck_blue_diagonal.png", renderer),
+        .duck_blue_falling = loadTexture("textures/original/duck_blue_falling.png", renderer),
+        .duck_blue_horizontal = loadTexture("textures/original/duck_blue_horizontal.png", renderer),
+        .duck_blue_vertical = loadTexture("textures/original/duck_blue_vertical.png", renderer),
+        .duck_brown_dead = loadTexture("textures/original/duck_brown_dead.png", renderer),
+        .duck_brown_diagonal = loadTexture("textures/original/duck_brown_diagonal.png", renderer),
+        .duck_brown_falling = loadTexture("textures/original/duck_brown_falling.png", renderer),
+        .duck_brown_horizontal = loadTexture("textures/original/duck_brown_horizontal.png", renderer),
+        .duck_brown_vertical = loadTexture("textures/original/duck_brown_vertical.png", renderer),
+        .duck_red_dead = loadTexture("textures/original/duck_red_dead.png", renderer),
+        .duck_red_diagonal = loadTexture("textures/original/duck_red_diagonal.png", renderer),
+        .duck_red_falling = loadTexture("textures/original/duck_red_falling.png", renderer),
+        .duck_red_horizontal = loadTexture("textures/original/duck_red_horizontal.png", renderer),
+        .duck_red_vertical = loadTexture("textures/original/duck_red_vertical.png", renderer),
+        .duck_score = loadTexture("textures/duck_score.png", renderer),
+        .foreground = loadTexture("textures/original/foreground.png", renderer),
+        .main_menu_background = loadTexture("textures/original/main_menu_background.png", renderer)
+    };
+}
+
 Textures loadTexturesRemake(SDL_Renderer* renderer) {
     return {
         .ui_bullet = loadTexture("textures/ui_bullet.png", renderer),

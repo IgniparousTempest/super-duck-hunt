@@ -7,6 +7,7 @@
 struct Config
 {
     int highScore;
+    bool useRemakeTextures;
 
     void load(const std::string &filename) {
         try {
@@ -17,9 +18,11 @@ struct Config
             read_json(filename, pt);
 
             highScore = pt.get("highScore", 0);
+            useRemakeTextures = pt.get("useRemakeTextures", true);
         }
         catch (const boost::property_tree::json_parser_error& e1) {
             highScore = 0;
+            useRemakeTextures = true;
         }
     }
 
@@ -29,6 +32,7 @@ struct Config
         ptree pt;
 
         pt.put("highScore", highScore);
+        pt.put("useRemakeTextures", useRemakeTextures);
 
         // Write the property tree to the XML file.
         write_json(filename, pt);

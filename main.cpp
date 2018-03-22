@@ -32,14 +32,19 @@ int main(int argc, char* argv []) {
         return 1;
     }
 
-    Textures textures = loadTexturesRemake(renderer);
+    Config config{};
+    config.load(CONFIG_PATH);
+    Textures textures{};
+    if (config.useRemakeTextures)
+        textures = loadTexturesRemake(renderer);
+    else
+        textures = loadTexturesOriginal(renderer);
     if (!validateTextures(&textures)) {
         cleanup(&textures, renderer, window);
         SDL_Quit();
         return 1;
     }
 
-    Config config{};
     while (true) {
         try {
             config.load(CONFIG_PATH);
