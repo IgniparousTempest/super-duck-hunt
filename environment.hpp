@@ -20,9 +20,11 @@ public:
         this->drawer = drawer;
         this->player_stats = player_stats;
         this->textures = textures;
+        now = 0;
+        last = 0;
     }
 
-    Environment(Environment* other) :
+    explicit Environment(Environment* other) :
         Environment(other->getDrawer(), other->getPlayerStats(), other->getTextures()) {}
 
     /// Renders the background for this environment.
@@ -61,7 +63,7 @@ public:
         now = SDL_GetPerformanceCounter();
         double deltaTime;
 
-        SDL_Event e;
+        SDL_Event e{};
         while (true) {
             bool returnValue;
             last = now;
@@ -227,10 +229,12 @@ enum GameType {NONE, SINGLE, DOUBLE};
 class MainMenu : public Environment {
 private:
     GameType gameType = NONE;
+    std::string highScore;
 
 public:
-    MainMenu(Drawer *drawer, Textures* textures)
+    MainMenu(Drawer *drawer, Textures* textures, int highScore)
         : Environment(drawer, nullptr, textures) {
+        this->highScore = std::to_string(highScore);
     }
 
     bool handleInput(SDL_Event e, bool* returnValue) override {
@@ -266,7 +270,8 @@ public:
     }
 
     void renderUI(double deltaTime) override {
-
+        for (int i = 0; i < highScore.size(); ++i)
+            drawer->renderCharacter(textures->ui_numbers_green, highScore[i], 238 + i * 8, 209);
     }
 
     GameType resultGameType() {

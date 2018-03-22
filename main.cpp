@@ -2,11 +2,13 @@
 #include "cleanup.hpp"
 #include "dog.hpp"
 #include "level.hpp"
+#include "scores.hpp"
 
 //const int SCREEN_WIDTH  = 960;
 //const int SCREEN_HEIGHT = 540;
 const int SCREEN_WIDTH  = 256 * 3;
 const int SCREEN_HEIGHT = 224 * 3;
+const std::string CONFIG_PATH = "./config.cfg";
 
 int main(int argc, char* argv []) {
     // Start SDL
@@ -37,11 +39,13 @@ int main(int argc, char* argv []) {
         return 1;
     }
 
+    Config config{};
     bool quit = false;
     while (!quit) {
+        config.load(CONFIG_PATH);
         Drawer drawer(textures.background, renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        MainMenu mainMenu(&drawer, &textures);
+        MainMenu mainMenu(&drawer, &textures, config.highScore);
         quit = mainMenu.start();
 
         Player_Stats player_stats;
@@ -57,8 +61,12 @@ int main(int argc, char* argv []) {
         if (!quit)
             quit = IntroCutScene(&drawer, &player_stats, &textures).start();
 
-        if (!quit)
+        if (!quit) {
             quit = SinglePlayerGame(&drawer, &player_stats, &textures).start();
+            config.highScore = player_stats.score;
+        }
+
+        config.save(CONFIG_PATH);
     }
 
     cleanup(&textures, renderer, window);

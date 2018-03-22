@@ -56,21 +56,6 @@ public:
         renderTexture(numbers_texture, x, y, &clip);
     }
 
-    /// Draws a lit up duck to the UI.
-    /// \param ducks_texture The texture to use for the lit ducks.
-    /// \param i The number of the duck.
-    /// \param x The x coordinate to draw to.
-    /// \param y The y coordinate to draw to.
-    void renderLitDuck(SDL_Texture* ducks_texture, int i, int x, int y) {
-        // Get width and height of each duck
-        int w, h;
-        SDL_QueryTexture(ducks_texture, nullptr, nullptr, &w, &h);
-        w /= 10;
-
-        SDL_Rect clip = {.x = i * w, .y = 0, .w = w, .h = h};
-        renderTexture(ducks_texture, x, y, &clip);
-    }
-
     /// Draw an SDL_Texture to the renderer at position x, y with the specified width and height.
     /// \param tex The source texture we want to draw.
     /// \param x The x coordinate to draw to.
@@ -122,7 +107,7 @@ public:
         for (int i = 0; i < 10; ++i) {
             isCurrentDuck = std::find(player_stats->ducks_current.begin(), player_stats->ducks_current.end(), i) != player_stats->ducks_current.end();
             if (player_stats->ducks_hit[i])
-                renderLitDuck(textures->ui_duck_lit, i, 181 + i * 8, 210);
+                renderTexture(textures->ui_duck_lit, 181 + i * 8, 210);
             else if (!isCurrentDuck || isFlickering)
                 renderTexture(textures->ui_duck_white, 181 + i * 8, 210);
         }

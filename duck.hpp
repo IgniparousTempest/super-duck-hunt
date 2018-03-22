@@ -159,7 +159,7 @@ public:
     }
 
     bool isOnScreen() {
-        if (y < 0)
+        if (y < 0 - height())
             return false;
         else if (x < scaledLeftBoundary)
             return false;
