@@ -42,34 +42,35 @@ int main(int argc, char* argv []) {
     Config config{};
     bool quit = false;
     while (!quit) {
-        config.load(CONFIG_PATH);
-        Drawer drawer(textures.background, renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+        try {
+            config.load(CONFIG_PATH);
+            Drawer drawer(textures.background, renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        MainMenu mainMenu(&drawer, &textures, config.highScore);
-        quit = mainMenu.start();
+            MainMenu mainMenu(&drawer, &textures, config.highScore);
+            mainMenu.start();
 
-        Player_Stats player_stats;
-        if (!quit) {
+            Player_Stats player_stats;
             if (mainMenu.resultGameType() == SINGLE)
                 player_stats = Level::singleDuckGame();
             else if (mainMenu.resultGameType() == DOUBLE)
                 player_stats = Level::doubleDuckGame();
             else
                 quit = true;
-        }
 
-        if (!quit)
-            quit = IntroCutScene(&drawer, &player_stats, &textures).start();
+            IntroCutScene(&drawer, &player_stats, &textures).start();
 
-        if (!quit) {
-            quit = SinglePlayerGame(&drawer, &player_stats, &textures).start();
+            SinglePlayerGame(&drawer, &player_stats, &textures).start();
             if (player_stats.score > config.highScore)
                 config.highScore = player_stats.score;
-        }
 
-        config.save(CONFIG_PATH);
+            config.save(CONFIG_PATH);
+        }
+        catch (QuitTrigger& quit) {
+            break;
+        }
     }
 
+    std::cout << "Quiting game." << std::endl;
     cleanup(&textures, renderer, window);
     SDL_Quit();
 }

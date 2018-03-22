@@ -29,18 +29,17 @@ public:
 
     /// Renders the background for this environment.
     /// \param deltaTime The time since the last frame in ms.
-    /// \param returnValue The value to return.
-    /// \return true if something should be returned, false otherwise.
-    virtual bool renderBackground(double deltaTime, bool* returnValue) {
+    /// \return true if environment should end, false otherwise.
+    virtual bool renderBackground(double deltaTime) {
         drawer->renderTexture(textures->background, 0, 0);
         return false;
     }
 
-    virtual bool update(double deltaTime, bool* returnValue) {
+    virtual bool update(double deltaTime) {
         return false;
     }
 
-    virtual bool renderForeground(double deltaTime, bool* returnValue) {
+    virtual bool renderForeground(double deltaTime) {
         drawer->renderTexture(textures->foreground, 0, 0);
         return false;
     }
@@ -49,45 +48,42 @@ public:
         drawer->renderUI(deltaTime, textures, player_stats);
     }
 
-    virtual bool handleInput(SDL_Event e, bool* returnValue) {
-        if (e.type == SDL_QUIT) {
-            *returnValue = true;
-            return true;
-        }
+    virtual bool handleInput(SDL_Event e) {
+        if (e.type == SDL_QUIT)
+            throw QuitTrigger();
         return false;
     }
 
     /// Starts the environment.
-    /// \return true if a quit event was triggered, false otherwise.
-    bool start() {
+    /// \throws QuitTrigger if the user tried to quit the game.
+    void start() {
         now = SDL_GetPerformanceCounter();
         double deltaTime;
 
         SDL_Event e{};
         while (true) {
-            bool returnValue;
             last = now;
             now = SDL_GetPerformanceCounter();
             deltaTime = ((now - last)*1000 / (double)SDL_GetPerformanceFrequency() );
 
             // User input
             while (SDL_PollEvent(&e) != 0) {
-                if (handleInput(e, &returnValue))
-                    return returnValue;
+                if (handleInput(e))
+                    return;
             }
 
             // Game Object updates
-            if (update(deltaTime, &returnValue))
-                return returnValue;
+            if (update(deltaTime))
+                return;
 
             // Rendering
             SDL_RenderClear(drawer->getRenderer()); // Flush buffer
 
-            if (renderBackground(deltaTime, &returnValue))
-                return returnValue;
+            if (renderBackground(deltaTime))
+                return;
 
-            if (renderForeground(deltaTime, &returnValue))
-                return returnValue;
+            if (renderForeground(deltaTime))
+                return;
 
             renderUI(deltaTime);
 
@@ -136,34 +132,30 @@ public:
         cutSceneState = SNIFFING;
     }
 
-    bool handleInput(SDL_Event e, bool* returnValue) override {
-        if (Environment::handleInput(e, returnValue))
+    bool handleInput(SDL_Event e) override {
+        if (Environment::handleInput(e))
             return true;
         if (e.type == SDL_KEYDOWN) {
-            if (e.key.keysym.sym == SDLK_ESCAPE) {
-                *returnValue = false;
+            if (e.key.keysym.sym == SDLK_ESCAPE)
                 return true;
-            }
         }
         return false;
     }
 
-    bool renderBackground(double deltaTime, bool* returnValue) override {
-        Environment::renderBackground(deltaTime, returnValue);
+    bool renderBackground(double deltaTime) override {
+        Environment::renderBackground(deltaTime);
 
         // Dog falling down
         if (cutSceneState == FALLING)
-            if (dogJumping.renderFall(drawer, deltaTime)) {
-                *returnValue = false;
+            if (dogJumping.renderFall(drawer, deltaTime))
                 return true;
-            }
 
         roundMessage.render(drawer, deltaTime);
         return false;
     }
 
-    bool renderForeground(double deltaTime, bool* returnValue) override {
-        Environment::renderForeground(deltaTime, returnValue);
+    bool renderForeground(double deltaTime) override {
+        Environment::renderForeground(deltaTime);
 
         // Dog walking from left to centre sniffing
         if (cutSceneState == SNIFFING)
@@ -194,14 +186,10 @@ public:
           dogSuccess(std::max(120, std::min(duckX, 210)), 157, 120, textures->dog_success, duck1Colour, duck2Colour, 0.1) {
     }
 
-    bool renderBackground(double deltaTime, bool* returnValue) override {
-        Environment::renderBackground(deltaTime, returnValue);
+    bool renderBackground(double deltaTime) override {
+        Environment::renderBackground(deltaTime);
 
-        if (dogSuccess.render(drawer, deltaTime)) {
-            *returnValue = false;
-            return true;
-        }
-        return false;
+        return dogSuccess.render(drawer, deltaTime);
     }
 };
 
@@ -213,14 +201,10 @@ public:
         : Environment(env), dogFailure(213, 157, 120, textures->dog_failure, 0.1, 10) {
     }
 
-    bool renderBackground(double deltaTime, bool* returnValue) override {
-        Environment::renderBackground(deltaTime, returnValue);
+    bool renderBackground(double deltaTime) override {
+        Environment::renderBackground(deltaTime);
 
-        if (dogFailure.render(drawer, deltaTime)) {
-            *returnValue = false;
-            return true;
-        }
-        return false;
+        return dogFailure.render(drawer, deltaTime);
     }
 };
 
@@ -237,8 +221,8 @@ public:
         this->highScore = std::to_string(highScore);
     }
 
-    bool handleInput(SDL_Event e, bool* returnValue) override {
-        if (Environment::handleInput(e, returnValue))
+    bool handleInput(SDL_Event e) override {
+        if (Environment::handleInput(e))
             return true;
         if (e.type == SDL_MOUSEBUTTONDOWN) {
             int mX, mY;
@@ -247,25 +231,23 @@ public:
             // Start single duck game
             if (mX > 106 && mX < 182 && mY > 127 && mY < 196) {
                 gameType = SINGLE;
-                *returnValue = false;
                 return true;
             }
             // Start dual duck game
             else if (mX > 237 && mX < 313 && mY > 127 && mY < 196) {
                 gameType = DOUBLE;
-                *returnValue = false;
                 return true;
             }
         }
         return false;
     }
 
-    bool renderBackground(double deltaTime, bool* returnValue) override {
+    bool renderBackground(double deltaTime) override {
         drawer->renderTexture(textures->main_menu_background, 0, 0);
         return false;
     }
 
-    bool renderForeground(double deltaTime, bool* returnValue) override {
+    bool renderForeground(double deltaTime) override {
         return false;
     }
 
@@ -294,21 +276,18 @@ public:
             this->duck2->flyUp();
     }
 
-    bool update(double deltaTime, bool* returnValue) override {
-        if (Environment::update(deltaTime, returnValue))
-            return *returnValue;
+    bool update(double deltaTime) override {
+        Environment::update(deltaTime);
 
         duck1->update(deltaTime);
         if (duck2 != nullptr)
             duck2->update(deltaTime);
 
-        if ((!duck1->isOnScreen() && duck2 == nullptr) || (duck2 != nullptr && !duck2->isOnScreen())) {
-            *returnValue = false;
+        if ((!duck1->isOnScreen() && duck2 == nullptr) || (duck2 != nullptr && !duck2->isOnScreen()))
             return true;
-        }
     }
 
-    bool renderBackground(double deltaTime, bool* returnValue) override {
+    bool renderBackground(double deltaTime) override {
         drawer->renderTexture(textures->background_fail, 0, 0);
 
         duck1->render(drawer, deltaTime);
@@ -318,9 +297,8 @@ public:
         return false;
     }
 
-    bool renderForeground(double deltaTime, bool* returnValue) override {
-        if (Environment::renderForeground(deltaTime, returnValue))
-            return *returnValue;
+    bool renderForeground(double deltaTime) override {
+        Environment::renderForeground(deltaTime);
 
         drawer->renderTexture(textures->ui_message_fly_away, 177, 60);
 
@@ -336,20 +314,15 @@ public:
     explicit GameOver(Environment* env) : Environment(env), dogGameOver(213, 157, 120, textures->dog_failure, 0.1, 10) {
     }
 
-    bool renderBackground(double deltaTime, bool* returnValue) override {
+    bool renderBackground(double deltaTime) override {
         drawer->renderTexture(textures->background_fail, 0, 0);
 
-        if (dogGameOver.render(drawer, deltaTime)) {
-            *returnValue = false;
-            return true;
-        }
+        return dogGameOver.render(drawer, deltaTime);
 
-        return false;
     }
 
-    bool renderForeground(double deltaTime, bool* returnValue) override {
-        if (Environment::renderForeground(deltaTime, returnValue))
-            return *returnValue;
+    bool renderForeground(double deltaTime) override {
+        Environment::renderForeground(deltaTime);
 
         drawer->renderTexture(textures->ui_message_game_over, 173, 44);
 

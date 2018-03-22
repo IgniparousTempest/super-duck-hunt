@@ -131,7 +131,7 @@ public:
     : Level(drawer, player_stats, textures) {
     }
 
-    bool update(double deltaTime, bool* returnValue) override {
+    bool update(double deltaTime) override {
         for (auto &duck : ducks)
             duck.update(deltaTime);
 
@@ -149,28 +149,22 @@ public:
                         successCutScene = new SuccessCutScene(this, x, previousDuckColour, iter->colour);
                     else
                         successCutScene = new SuccessCutScene(this, x, iter->colour);
-                    if (successCutScene->start()) {
-                        *returnValue = true;
-                        return true;
-                    }
+                    successCutScene->start();
                     delete successCutScene;
                     now = SDL_GetPerformanceCounter(); // TODO: Not very accurate
                 }
                 iter = ducks.erase(iter);
 
-                if (!trySpawnDuckOrStartNewRound()) {
-                    *returnValue = true;
-                    return true;
-                }
+                if (!trySpawnDuckOrStartNewRound())
+                    throw QuitTrigger();
             }
             else
                 iter++;
         }
     }
 
-    bool handleInput(SDL_Event e, bool* returnValue) override {
-        if (Environment::handleInput(e, returnValue))
-            return true;
+    bool handleInput(SDL_Event e) override {
+        Environment::handleInput(e);
         if (e.type == SDL_MOUSEBUTTONDOWN) {
             if (player_stats->shots_left > 0) {
                 player_stats->shots_left -= 1;
@@ -192,29 +186,21 @@ public:
                     Duck* duck2 = nullptr;
                     if (ducks.size() == 2)
                         duck2 = &ducks.at(1);
-                    if (FlyAwayDuck(this, &ducks.at(0), duck2).start()) {
-                        *returnValue = true;
-                        return true;
-                    }
+                    FlyAwayDuck(this, &ducks.at(0), duck2).start();
                     ducks = {};
-                    if (FailureCutScene(this).start()) {
-                        *returnValue = true;
-                        return true;
-                    }
+                    FailureCutScene(this).start();
                     now = SDL_GetPerformanceCounter(); // TODO: Not very accurate
-                    
-                    if (!trySpawnDuckOrStartNewRound()) {
-                        *returnValue = true;
-                        return true;
-                    }
+
+                    if (!trySpawnDuckOrStartNewRound())
+                        throw QuitTrigger();
                 }
             }
         }
         return false;
     }
 
-    bool renderBackground(double deltaTime, bool* returnValue) override {
-        Environment::renderBackground(deltaTime, returnValue);
+    bool renderBackground(double deltaTime) override {
+        Environment::renderBackground(deltaTime);
 
         for (auto &duck : ducks)
             duck.render(drawer, deltaTime);
@@ -222,8 +208,8 @@ public:
         return false;
     }
 
-    bool renderForeground(double deltaTime, bool* returnValue) override {
-        Environment::renderForeground(deltaTime, returnValue);
+    bool renderForeground(double deltaTime) override {
+        Environment::renderForeground(deltaTime);
 
         for (auto &duck : ducks)
             if (duck.isFalling())
