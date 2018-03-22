@@ -171,7 +171,7 @@ public:
     /// Checks whether the duck has died and is falling back to the ground.
     /// \return true if falling, false otherwise.
     bool isFalling() {
-        return !alive && current != &dead && current != &falling;
+        return !alive && current == &falling;
     }
 
     int width() {
@@ -248,7 +248,6 @@ public:
         SDL_Rect* scoreFrame;
         switch (duck_colour) {
             case blue:
-                scoreFrame = &duckScoreFrames[2];
                 dead = &blueDead;
                 falling = &blueFalling;
                 flyDiagonal = &blueFlyingDiagonal;
@@ -256,7 +255,6 @@ public:
                 flyVertical = &blueFlyingVertical;
                 break;
             case red:
-                scoreFrame = &duckScoreFrames[3];
                 dead = &redDead;
                 falling = &redFalling;
                 flyDiagonal = &redFlyingDiagonal;
@@ -264,7 +262,6 @@ public:
                 flyVertical = &redFlyingVertical;
                 break;
             default:
-                scoreFrame = &duckScoreFrames[0];
                 dead = &brownDead;
                 falling = &brownFalling;
                 flyDiagonal = &brownFlyingDiagonal;
@@ -272,6 +269,33 @@ public:
                 flyVertical = &brownFlyingVertical;
                 break;
         }
+        switch (score) {
+            default:
+                scoreFrame = &duckScoreFrames[0];
+                break;
+            case 800:
+                scoreFrame = &duckScoreFrames[1];
+                break;
+            case 1000:
+                scoreFrame = &duckScoreFrames[2];
+                break;
+            case 1500:
+                scoreFrame = &duckScoreFrames[3];
+                break;
+            case 1600:
+                scoreFrame = &duckScoreFrames[4];
+                break;
+            case 2000:
+                scoreFrame = &duckScoreFrames[5];
+                break;
+            case 2400:
+                scoreFrame = &duckScoreFrames[6];
+                break;
+            case 3000:
+                scoreFrame = &duckScoreFrames[7];
+                break;
+        }
+
         double speed = 0.05 + 0.01 * round;
         std::uniform_int_distribution<int> dist(spawnXLow, spawnXHigh);
         int spawn_x = dist(mt);
