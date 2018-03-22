@@ -9,7 +9,7 @@
 class DogSniffing {
 private:
     SDL_Texture* tex_sniffing;
-    std::array<SDL_Rect, 6> frames;
+    std::vector<SDL_Rect> frames;
     int currentFrame;
     double frameTime;
     double frameLength;
@@ -24,7 +24,7 @@ public:
         this->tex_sniffing = tex_sniffing;
 
         // Get rect of each frame
-        frames = spriteStripRects<6>(tex_sniffing);
+        frames = spriteStripRects(tex_sniffing, 6);
 
         x = 88;
         y = 145;
@@ -131,15 +131,16 @@ private:
 
 public:
     DogSuccess(int x, int yBottom, int yTop, SDL_Texture* texture_success, DuckColours colour, double speed) : DogSuccess(x, yBottom, yTop, texture_success, speed) {
+        auto frames = spriteStripRects(texture_success, 12);
         switch (colour) {
-            case blue:
-                frame = spriteStripRects<12>(texture_success)[1];
+            case BLUE:
+                frame = frames[1];
                 break;
-            case red:
-                frame = spriteStripRects<12>(texture_success)[2];
+            case RED:
+                frame = frames[2];
                 break;
             default:
-                frame = spriteStripRects<12>(texture_success)[0];
+                frame = frames[0];
                 break;
         }
     }
@@ -147,10 +148,10 @@ public:
     DogSuccess(int x, int yBottom, int yTop, SDL_Texture* texture_success, DuckColours colour1, DuckColours colour2, double speed) : DogSuccess(x, yBottom, yTop, texture_success, speed) {
         int index;
         switch (colour1) {
-            case blue:
+            case BLUE:
                 index = 6;
                 break;
-            case red:
+            case RED:
                 index = 9;
                 break;
             default:
@@ -158,17 +159,17 @@ public:
                 break;
         }
         switch (colour2) {
-            case blue:
+            case BLUE:
                 index += 1;
                 break;
-            case red:
+            case RED:
                 index += 2;
                 break;
             default:
                 index += 0;
                 break;
         }
-        frame = spriteStripRects<12>(texture_success)[index];
+        frame = spriteStripRects(texture_success, 12)[index];
     }
 
     ///

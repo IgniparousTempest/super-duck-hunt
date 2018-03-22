@@ -9,7 +9,7 @@
 #include "drawing.hpp"
 #include "animation.hpp"
 
-enum DuckColours { blue, brown, red };
+enum DuckColours { NO_COLOUR, BLUE, BROWN, RED };
 const double pi = std::acos(-1);
 
 class Duck {
@@ -214,7 +214,7 @@ private:
     Animation redFlyingDiagonal;
     Animation redFlyingHorizontal;
     Animation redFlyingVertical;
-    std::array<SDL_Rect, 8> duckScoreFrames;
+    std::vector<SDL_Rect> duckScoreFrames;
     SDL_Texture* duckScoreTexture;
 
     double scaledLeftBoundary;
@@ -233,7 +233,7 @@ public:
           redFlyingVertical(textures->duck_red_vertical, 3) {
         mt = std::mt19937(rd());
         duckScoreTexture = textures->duck_score;
-        duckScoreFrames = spriteStripRects<8>(duckScoreTexture);
+        duckScoreFrames = spriteStripRects(duckScoreTexture, 8);
 
         scaledLeftBoundary = -drawer->x_offset / drawer->scale;
         scaledRightBoundary = drawer->window_width / drawer->scale + scaledLeftBoundary - blueDead.frameWidth();
@@ -247,14 +247,14 @@ public:
         Animation* flyVertical;
         SDL_Rect* scoreFrame;
         switch (duck_colour) {
-            case blue:
+            case BLUE:
                 dead = &blueDead;
                 falling = &blueFalling;
                 flyDiagonal = &blueFlyingDiagonal;
                 flyHorizontal = &blueFlyingHorizontal;
                 flyVertical = &blueFlyingVertical;
                 break;
-            case red:
+            case RED:
                 dead = &redDead;
                 falling = &redFalling;
                 flyDiagonal = &redFlyingDiagonal;

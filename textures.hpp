@@ -92,16 +92,6 @@ std::vector<SDL_Rect> spriteStripRects(SDL_Texture* texture, size_t size) {
     return frames;
 }
 
-template <size_t size>
-std::array<SDL_Rect, size> spriteStripRects(SDL_Texture* texture) {
-    std::array<SDL_Rect, size> frames;
-
-    auto v = spriteStripRects(texture, size);
-    std::copy_n(std::make_move_iterator(v.begin()), size, frames.begin());
-
-    return frames;
-}
-
 Textures loadTexturesRemake(SDL_Renderer* renderer) {
     return {
         .ui_bullet = loadTexture("textures/ui_bullet.png", renderer),

@@ -40,8 +40,7 @@ int main(int argc, char* argv []) {
     }
 
     Config config{};
-    bool quit = false;
-    while (!quit) {
+    while (true) {
         try {
             config.load(CONFIG_PATH);
             Drawer drawer(textures.background, renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -54,8 +53,6 @@ int main(int argc, char* argv []) {
                 player_stats = Level::singleDuckGame();
             else if (mainMenu.resultGameType() == DOUBLE)
                 player_stats = Level::doubleDuckGame();
-            else
-                quit = true;
 
             IntroCutScene(&drawer, &player_stats, &textures).start();
 

@@ -108,14 +108,6 @@ public:
         return drawer;
     }
 
-    SDL_Texture* getBackground() {
-        return textures->background;
-    }
-
-    SDL_Texture* getForeground() {
-        return textures->foreground;
-    }
-
     Player_Stats* getPlayerStats() {
         return player_stats;
     }
@@ -224,18 +216,19 @@ public:
     }
 };
 
-enum GameType {NONE, SINGLE, DOUBLE};
+enum GameType {SINGLE, DOUBLE};
 
 /// The main menu environment.
 class MainMenu : public Environment {
 private:
-    GameType gameType = NONE;
+    GameType gameType;
     std::string highScore;
 
 public:
     MainMenu(Drawer *drawer, Textures* textures, int highScore)
         : Environment(drawer, nullptr, textures) {
         this->highScore = std::to_string(highScore);
+        gameType = SINGLE;
     }
 
     bool handleInput(SDL_Event e) override {

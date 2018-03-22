@@ -7,12 +7,13 @@ class Level : public Environment {
 protected:
     std::vector<Duck> ducks;
     DuckHatchery hatchery;
-    DuckColours previousDuckColour;
+    DuckColours firstDuckColour;
 
 public:
     Level(Drawer *drawer, Player_Stats *player_stats, Textures *textures)
         : Environment(drawer, player_stats, textures), hatchery(textures, drawer) {
         ducks = {};
+        firstDuckColour = NO_COLOUR;
         trySpawnDuck();
     }
 
@@ -30,12 +31,12 @@ public:
         auto mt = std::mt19937(rd());
         std::uniform_int_distribution<int> dist(0, 10);
         for (int i = 0; i < player_stats->ducks_simultaneous; ++i) {
-            DuckColours colour = brown;
+            DuckColours colour = BROWN;
             int duckColourRandom = dist(mt);
             if (duckColourRandom < 1)
-                colour = red;
+                colour = RED;
             else if (duckColourRandom < 5)
-                colour = blue;
+                colour = BLUE;
             ducks.push_back(hatchery.newDuck(colour, scoreForDuck(player_stats->round, colour), player_stats->round, player_stats->duck_next));
             player_stats->ducks_current.push_back(player_stats->duck_next++);
         }
@@ -88,8 +89,8 @@ public:
         else
             multiplier = 2.0;
         switch (colour) {
-            case blue:return static_cast<int>(1000 * multiplier);
-            case red:return static_cast<int>(1500 * multiplier);
+            case BLUE:return static_cast<int>(1000 * multiplier);
+            case RED:return static_cast<int>(1500 * multiplier);
             default:return static_cast<int>(500 * multiplier);
         }
     }
@@ -140,13 +141,13 @@ public:
             iter->update(deltaTime);
             if (iter->y > hatchery.spawnY) {
                 if (ducks.size() == 2)
-                    previousDuckColour = iter->colour;
+                    firstDuckColour = iter->colour;
                     // Show success cut scene
                 else if (ducks.size() == 1) {
                     auto x = static_cast<int>(iter->x);
                     SuccessCutScene* successCutScene;
                     if (player_stats->ducks_simultaneous == 2)
-                        successCutScene = new SuccessCutScene(this, x, previousDuckColour, iter->colour);
+                        successCutScene = new SuccessCutScene(this, x, firstDuckColour, iter->colour);
                     else
                         successCutScene = new SuccessCutScene(this, x, iter->colour);
                     successCutScene->start();
