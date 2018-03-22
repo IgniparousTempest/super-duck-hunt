@@ -63,7 +63,8 @@ int main(int argc, char* argv []) {
 
         if (!quit) {
             quit = SinglePlayerGame(&drawer, &player_stats, &textures).start();
-            config.highScore = player_stats.score;
+            if (player_stats.score > config.highScore)
+                config.highScore = player_stats.score;
         }
 
         config.save(CONFIG_PATH);
