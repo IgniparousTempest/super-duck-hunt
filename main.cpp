@@ -12,13 +12,12 @@ const std::string CONFIG_PATH = "./config.cfg";
 
 int main(int argc, char* argv []) {
     // Start SDL
-    putenv(const_cast<char *>("SDL_VIDEO_CENTERED=1"));
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         logSDLError(std::cout, "SDL_Init");
         return 1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("Super Duck Hunt", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    SDL_Window *window = SDL_CreateWindow("Super Duck Hunt", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == nullptr) {
         logSDLError(std::cout, "CreateWindow");
         SDL_Quit();
