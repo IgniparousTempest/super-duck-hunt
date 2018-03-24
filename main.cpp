@@ -18,7 +18,7 @@ int main(int argc, char* argv []) {
         return 1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("Duck Hunt", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    SDL_Window *window = SDL_CreateWindow("Super Duck Hunt", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == nullptr) {
         logSDLError(std::cout, "CreateWindow");
         SDL_Quit();
