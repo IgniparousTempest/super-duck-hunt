@@ -1,6 +1,8 @@
 # super-duck-hunt
 A rewrite of the NES game "Duck Hunt" in C++ and SDL2
 
+![](.README/screenshot1.png)
+
 ## Notes on original game
 
 ### Score
