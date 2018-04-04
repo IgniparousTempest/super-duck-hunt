@@ -1,9 +1,9 @@
 #ifndef DUCKHUNT_LEVEL_HPP
 #define DUCKHUNT_LEVEL_HPP
 
-#include "environment.hpp"
+#include "scene.hpp"
 
-class Level : public Environment {
+class Level : public Scene {
 protected:
     std::vector<Duck> ducks;
     DuckHatchery hatchery;
@@ -11,7 +11,7 @@ protected:
 
 public:
     Level(Drawer *drawer, Player_Stats *player_stats, Textures *textures)
-        : Environment(drawer, player_stats, textures), hatchery(textures, drawer) {
+        : Scene(drawer, player_stats, textures), hatchery(textures, drawer) {
         ducks = {};
         firstDuckColour = NO_COLOUR;
         trySpawnDuck();
@@ -142,7 +142,7 @@ public:
             if (iter->y > hatchery.spawnY) {
                 if (ducks.size() == 2)
                     firstDuckColour = iter->colour;
-                    // Show success cut scene
+                // Show success cut scene
                 else if (ducks.size() == 1) {
                     auto x = static_cast<int>(iter->x);
                     SuccessCutScene* successCutScene;
@@ -165,7 +165,7 @@ public:
     }
 
     bool handleInput(SDL_Event e) override {
-        Environment::handleInput(e);
+        Scene::handleInput(e);
         if (e.type == SDL_MOUSEBUTTONDOWN) {
             if (player_stats->shots_left > 0) {
                 player_stats->shots_left -= 1;
@@ -201,7 +201,7 @@ public:
     }
 
     bool renderBackground(double deltaTime) override {
-        Environment::renderBackground(deltaTime);
+        Scene::renderBackground(deltaTime);
 
         for (auto &duck : ducks)
             duck.render(drawer, deltaTime);
@@ -210,7 +210,7 @@ public:
     }
 
     bool renderForeground(double deltaTime) override {
-        Environment::renderForeground(deltaTime);
+        Scene::renderForeground(deltaTime);
 
         for (auto &duck : ducks)
             if (duck.isFalling())

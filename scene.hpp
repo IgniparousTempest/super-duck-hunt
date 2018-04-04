@@ -7,7 +7,7 @@
 #include "textures.hpp"
 #include "message.hpp"
 
-class Environment {
+class Scene {
 protected:
     Uint64 now;
     Uint64 last;
@@ -16,7 +16,7 @@ protected:
     Textures* textures;
 
 public:
-    Environment(Drawer* drawer, Player_Stats* player_stats, Textures* textures) {
+    Scene(Drawer* drawer, Player_Stats* player_stats, Textures* textures) {
         this->drawer = drawer;
         this->player_stats = player_stats;
         this->textures = textures;
@@ -24,8 +24,8 @@ public:
         last = 0;
     }
 
-    explicit Environment(Environment* other) :
-        Environment(other->getDrawer(), other->getPlayerStats(), other->getTextures()) {}
+    explicit Scene(Scene* other) :
+        Scene(other->getDrawer(), other->getPlayerStats(), other->getTextures()) {}
 
     /// Renders the background for this environment.
     /// \param deltaTime The time since the last frame in ms.
@@ -124,7 +124,7 @@ enum IntroCutSceneState {
 };
 
 /// Shows the intro to the game, i.e. the dog sniffing and jumping into the bushes.
-class IntroCutScene : public Environment {
+class IntroCutScene : public Scene {
 private:
     IntroCutSceneState cutSceneState;
     DogSniffing dogSniffing;
@@ -133,13 +133,13 @@ private:
 
 public:
     IntroCutScene(Drawer *drawer, Player_Stats *player_stats, Textures *textures)
-        : Environment(drawer, player_stats, textures), dogSniffing(textures->dog_sniffing, 7),
+        : Scene(drawer, player_stats, textures), dogSniffing(textures->dog_sniffing, 7),
           dogJumping(textures->dog_jumping, 90), roundMessage(189, 52, 2500.0, textures->ui_message_round, 1, textures->ui_numbers_white) {
         cutSceneState = SNIFFING;
     }
 
     bool handleInput(SDL_Event e) override {
-        if (Environment::handleInput(e))
+        if (Scene::handleInput(e))
             return true;
         if (e.type == SDL_KEYDOWN) {
             if (e.key.keysym.sym == SDLK_ESCAPE)
@@ -149,7 +149,7 @@ public:
     }
 
     bool renderBackground(double deltaTime) override {
-        Environment::renderBackground(deltaTime);
+        Scene::renderBackground(deltaTime);
 
         // Dog falling down
         if (cutSceneState == FALLING)
@@ -161,7 +161,7 @@ public:
     }
 
     bool renderForeground(double deltaTime) override {
-        Environment::renderForeground(deltaTime);
+        Scene::renderForeground(deltaTime);
 
         // Dog walking from left to centre sniffing
         if (cutSceneState == SNIFFING)
@@ -181,36 +181,36 @@ public:
 };
 
 /// Shows the cut scene for successfully shooting a duck or ducks, i.e. the dog rising from the bushes holding the dead ducks.
-class SuccessCutScene : public Environment {
+class SuccessCutScene : public Scene {
 private:
     DogSuccess dogSuccess;
 public:
-    SuccessCutScene(Environment* env, int duckX, DuckColours duckColour) : Environment(env),
+    SuccessCutScene(Scene* env, int duckX, DuckColours duckColour) : Scene(env),
           dogSuccess(std::max(120, std::min(duckX, 210)), 157, 120, textures->dog_success, duckColour, 0.1) {
     }
-    SuccessCutScene(Environment* env, int duckX, DuckColours duck1Colour, DuckColours duck2Colour)
-        : Environment(env),
+    SuccessCutScene(Scene* env, int duckX, DuckColours duck1Colour, DuckColours duck2Colour)
+        : Scene(env),
           dogSuccess(std::max(120, std::min(duckX, 210)), 157, 120, textures->dog_success, duck1Colour, duck2Colour, 0.1) {
     }
 
     bool renderBackground(double deltaTime) override {
-        Environment::renderBackground(deltaTime);
+        Scene::renderBackground(deltaTime);
 
         return dogSuccess.render(drawer, deltaTime);
     }
 };
 
 /// Shows the cut scene for failing to shoot any ducks, i.e. the dog rising from the bushes and laughing.
-class FailureCutScene : public Environment {
+class FailureCutScene : public Scene {
 private:
     DogFailure dogFailure;
 public:
-    explicit FailureCutScene(Environment* env)
-        : Environment(env), dogFailure(213, 157, 120, textures->dog_failure, 0.1, 10) {
+    explicit FailureCutScene(Scene* env)
+        : Scene(env), dogFailure(213, 157, 120, textures->dog_failure, 0.1, 10) {
     }
 
     bool renderBackground(double deltaTime) override {
-        Environment::renderBackground(deltaTime);
+        Scene::renderBackground(deltaTime);
 
         return dogFailure.render(drawer, deltaTime);
     }
@@ -219,20 +219,20 @@ public:
 enum GameType {SINGLE, DOUBLE};
 
 /// The main menu environment.
-class MainMenu : public Environment {
+class MainMenu : public Scene {
 private:
     GameType gameType;
     std::string highScore;
 
 public:
     MainMenu(Drawer *drawer, Textures* textures, int highScore)
-        : Environment(drawer, nullptr, textures) {
+        : Scene(drawer, nullptr, textures) {
         this->highScore = std::to_string(highScore);
         gameType = SINGLE;
     }
 
     bool handleInput(SDL_Event e) override {
-        if (Environment::handleInput(e))
+        if (Scene::handleInput(e))
             return true;
         if (e.type == SDL_MOUSEBUTTONDOWN) {
             int mX, mY;
@@ -272,13 +272,13 @@ public:
 };
 
 /// When the duck flew away after the player runs out of bullets.
-class FlyAwayDuck : public Environment {
+class FlyAwayDuck : public Scene {
 private:
     Duck* duck1;
     Duck* duck2;
 
 public:
-    FlyAwayDuck(Environment* env, Duck* duck1, Duck* duck2 = nullptr) : Environment(env) {
+    FlyAwayDuck(Scene* env, Duck* duck1, Duck* duck2 = nullptr) : Scene(env) {
         this->duck1 = duck1;
         this->duck2 = duck2;
 
@@ -288,7 +288,7 @@ public:
     }
 
     bool update(double deltaTime) override {
-        Environment::update(deltaTime);
+        Scene::update(deltaTime);
 
         duck1->update(deltaTime);
         if (duck2 != nullptr)
@@ -309,7 +309,7 @@ public:
     }
 
     bool renderForeground(double deltaTime) override {
-        Environment::renderForeground(deltaTime);
+        Scene::renderForeground(deltaTime);
 
         drawer->renderTexture(textures->ui_message_fly_away, 177, 60);
 
@@ -318,12 +318,12 @@ public:
 };
 
 /// The dog laughs at the player and the game over message is displayed.
-class GameOver : public Environment {
+class GameOver : public Scene {
 private:
     DogGameOver dogGameOver;
 
 public:
-    explicit GameOver(Environment* env) : Environment(env), dogGameOver(213, 157, 120, textures->dog_failure, 0.1, 10) {
+    explicit GameOver(Scene* env) : Scene(env), dogGameOver(213, 157, 120, textures->dog_failure, 0.1, 10) {
     }
 
     bool renderBackground(double deltaTime) override {
@@ -334,7 +334,7 @@ public:
     }
 
     bool renderForeground(double deltaTime) override {
-        Environment::renderForeground(deltaTime);
+        Scene::renderForeground(deltaTime);
 
         drawer->renderTexture(textures->ui_message_game_over, 173, 44);
 
@@ -343,7 +343,7 @@ public:
 };
 
 /// Flashes the ducks' hit ui after the round is complete.
-class DuckUIFlash : public Environment {
+class DuckUIFlash : public Scene {
 private:
     Player_Stats stats_template;
     Player_Stats stats;
@@ -353,7 +353,7 @@ private:
     const int maxFlashes = 5 * 2;
 
 public:
-    explicit DuckUIFlash(Environment* env) : Environment(env), timer(500.0) {
+    explicit DuckUIFlash(Scene* env) : Scene(env), timer(500.0) {
         stats_template = *player_stats;
         stats_template.ducks_current = {};
         stats = stats_template;
@@ -362,13 +362,13 @@ public:
     }
 
     bool update(double deltaTime) override {
-        Environment::update(deltaTime);
+        Scene::update(deltaTime);
 
         return flashes >= maxFlashes;
     }
 
     void renderUI(double deltaTime) override {
-        Environment::renderUI(deltaTime);
+        Scene::renderUI(deltaTime);
 
         if (timer.tick(deltaTime)) {
             for (int i = 0; i < stats.ducks_hit.size(); ++i) {
@@ -386,24 +386,24 @@ public:
 };
 
 /// Moves ducks' hit ui to the left after a round is complete.
-class DuckUICoalesce : public Environment {
+class DuckUICoalesce : public Scene {
 private:
     Timer timer;
     bool done;
 
 public:
-    explicit DuckUICoalesce(Environment* env) : Environment(env), timer(500.0) {
+    explicit DuckUICoalesce(Scene* env) : Scene(env), timer(500.0) {
         done = false;
     }
 
     bool update(double deltaTime) override {
-        Environment::update(deltaTime);
+        Scene::update(deltaTime);
 
         return done;
     }
 
     void renderUI(double deltaTime) override {
-        Environment::renderUI(deltaTime);
+        Scene::renderUI(deltaTime);
 
         if (timer.tick(deltaTime)) {
             done = true;

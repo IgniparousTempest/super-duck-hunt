@@ -28,6 +28,7 @@ private:
     double speed;
     SDL_Texture* scoreTexture;
     SDL_Rect scoreFrame;
+    Timer lifeTimer;
 
     // animation
     /// True when the duck is first out of the bush it spawns in.
@@ -50,7 +51,7 @@ public:
          double scaledLeftBoundary, double scaledRightBoundary, SDL_Texture* scoreTexture, SDL_Rect scoreFrame,
          std::mt19937* mt) : dead(std::move(dead)), falling(std::move(falling)), flyDiagonal(std::move(flyDiagonal)),
                              flyHorizontal(std::move(flyHorizontal)), flyVertical(std::move(flyVertical)),
-                             scoreFrame(scoreFrame), deadTimer(500.0) {
+                             scoreFrame(scoreFrame), deadTimer(500), lifeTimer(10000) {
         this->mt = mt;
         this->index = index;
         this->colour = colour;
@@ -117,6 +118,10 @@ public:
         }
     }
 
+    bool canDuckEscape(double deltaTime) {
+        return lifeTimer.tick(deltaTime);
+    }
+
     void render(Drawer* drawer, double deltaTime) {
         // TODO: I can't initialise current in the constructor?
         if (current == nullptr)
@@ -156,6 +161,10 @@ public:
         stayOnScreen = false;
         angle = pi / 2.0;
         current = &flyVertical;
+    }
+
+    void flyAway() {
+        stayOnScreen = false;
     }
 
     bool isOnScreen() {
